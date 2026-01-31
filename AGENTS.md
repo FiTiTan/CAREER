@@ -189,13 +189,42 @@ The goal: Be helpful without being annoying. Check in a few times a day, do usef
 
 ## 🔍 Code Quality Checklist
 
-**Après chaque phase de coding :**
+**Après chaque phase de coding (avant push) :**
 
-1. **Debug théorique** : scanner le code pour conflits, imports manquants, handlers IPC
-2. **Test mental** : simuler les appels critiques
-3. **Commit atomique** : un fix = un commit clair
-4. **Type-check** : `npx tsc --noEmit` (si TypeScript)
-5. **Push IMMÉDIAT** : `git push` après CHAQUE commit ⚠️
+### 1. Debug Checks (obligatoires)
+
+```bash
+# TypeScript
+npx tsc --noEmit
+
+# Vérifier imports
+grep -r "from.*\\.ts" src/ | grep -v node_modules
+grep -r "import.*{" src/ | grep -v "from ['\"]@"
+
+# Vérifier handlers IPC exposés
+# main.cjs : ipcMain.handle('handler-name', ...)
+# preload.cjs : window.electron.category.method()
+grep "ipcMain.handle" main.cjs | cut -d"'" -f2 | sort > /tmp/handlers.txt
+grep "ipcRenderer.invoke" preload.cjs | cut -d"'" -f2 | sort > /tmp/preload.txt
+diff /tmp/handlers.txt /tmp/preload.txt
+```
+
+**Checklist mentale :**
+- ✅ TypeScript compile (0 erreurs)
+- ✅ Imports résolus (pas de chemins cassés)
+- ✅ Handlers IPC main.cjs ↔ preload.cjs synchronisés
+- ✅ Simulation flux critique (tracer appels UI → IPC → DB)
+- ✅ Pas de console.error non gérés
+- ✅ Variables undefined gérées
+
+### 2. Commit atomique
+Un fix = un commit clair avec message descriptif
+
+### 3. Push IMMÉDIAT ⚠️
+
+```bash
+git push
+```
 
 **RÈGLE ABSOLUE** : Ne JAMAIS commiter sans push immédiatement après.
 
@@ -206,7 +235,9 @@ The goal: Be helpful without being annoying. Check in a few times a day, do usef
 
 **Exception :** Work-in-progress explicite demandé par l'humain.
 
-C'est plus rapide de vérifier 2 minutes que de débugger 20 minutes après.
+---
+
+**Gain de temps :** 2 min de vérification = évite 20 min de debugging côté humain.
 
 ---
 
