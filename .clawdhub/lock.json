@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "skills": {
+    "react-expert": {
+      "version": "0.1.0",
+      "installedAt": 1769929150964
+    },
+    "playwright-cli": {
+      "version": "1.0.1",
+      "installedAt": 1769929152646
+    },
+    "linear-skill": {
+      "version": "0.1.0",
+      "installedAt": 1769929154463
+    },
+    "gemini-deep-research": {
+      "version": "1.0.0",
+      "installedAt": 1769929156413
+    },
+    "superdesign": {
+      "version": "1.0.0",
+      "installedAt": 1769929158215
+    }
+  }
+}

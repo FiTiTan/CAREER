@@ -14,6 +14,8 @@ Before doing anything else:
 3. Read `memory/YYYY-MM-DD.md` (today + yesterday) for recent context
 4. **If in MAIN SESSION** (direct chat with your human): Also read `MEMORY.md`
 5. **Check Clawdbot updates** (first message of the day only - see MEMORY.md)
+6. **For SOUVERAIN work**: Read `SOUVERAIN/DESIGN.md` — respect CALM-UI obligatoirement
+6. **For SOUVERAIN work**: Read `DESIGN.md` — respect CALM-UI design system obligatoirement
 
 Don't ask permission. Just do it.
 
@@ -186,6 +188,27 @@ Periodically (every few days), use a heartbeat to:
 Think of it like a human reviewing their journal and updating their mental model. Daily files are raw notes; MEMORY.md is curated wisdom.
 
 The goal: Be helpful without being annoying. Check in a few times a day, do useful background work, but respect quiet time.
+
+## 🎨 SOUVERAIN Design System (OBLIGATOIRE)
+
+**Avant de créer/modifier un composant UI :**
+
+1. **Lire `DESIGN.md`** dans le repo SOUVERAIN
+2. **Respecter CALM-UI** :
+   - ❌ **PAS d'émojis** dans l'UI (sauf onboarding)
+   - ✅ **Icônes SVG** uniquement (Feather Icons style)
+   - ✅ **theme.*** pour couleurs (dark/light compatible)
+   - ✅ **typography.*** pour font-sizes/weights
+   - ✅ **borderRadius.*** pour arrondis
+   - ✅ **transitions.*** pour animations
+3. **Vérifier cohérence** avec composants existants
+
+**Checklist rapide :**
+- [ ] Import `useTheme`, `typography`, `borderRadius`, `transitions`
+- [ ] Aucun émoji dans le JSX
+- [ ] Aucune couleur hardcodée (#XXX)
+- [ ] Icônes SVG inline (pas d'images)
+- [ ] Compatible dark/light mode
 
 ## 🔍 Code Quality Checklist
 
