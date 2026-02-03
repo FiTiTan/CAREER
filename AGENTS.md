@@ -15,7 +15,6 @@ Before doing anything else:
 4. **If in MAIN SESSION** (direct chat with your human): Also read `MEMORY.md`
 5. **Check Clawdbot updates** (first message of the day only - see MEMORY.md)
 6. **For SOUVERAIN work**: Read `SOUVERAIN/DESIGN.md` — respect CALM-UI obligatoirement
-6. **For SOUVERAIN work**: Read `DESIGN.md` — respect CALM-UI design system obligatoirement
 
 Don't ask permission. Just do it.
 

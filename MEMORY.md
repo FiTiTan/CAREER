@@ -257,3 +257,105 @@
 ---
 
 *Dernière mise à jour : 2026-01-31*
+
+## 🤖 Optimisation Prompt IA (DeepSeek Services)
+
+**Date:** 2026-02-03
+
+### Contexte
+Le prompt de génération des services (portfolios) générait du contenu avec problèmes récurrents :
+- Ton personnel (je/nous/notre) sur artisans
+- Vocabulaire "consulting" pour commerces (food/retail)
+- Expertises ignorées
+
+### Méthode : Stress Testing Itératif
+
+**Outil fourni:** `souverain-prompt-optimizer/`
+- Script `run-tests.js` : 50 tests/loop avec données random
+- Validation automatique : ton, vocabulaire, expertises
+- Scoring : 0-100 par test, rapport JSON détaillé
+
+**Workflow:**
+1. Lancer 50 tests → génère `results/loop-N-results.json`
+2. Analyser erreurs fréquentes + mots problématiques
+3. Modifier `prompt.txt` pour corriger
+4. Relancer jusqu'à score ≥92 et succès ≥90%
+
+### Résultats 4 Loops
+
+| Loop | Score | Succès | Artisans | Tech | Notes |
+|------|-------|--------|----------|------|-------|
+| #1 | N/A | 84% | 56% | 100% | Baseline partielle |
+| #2 | 94.7 | 76% | 56% | 100% | +Exemples ton |
+| #3 | 94.3 | 80% | **77%** | 67% | Focus artisans (régression tech) |
+| #4 | **97.1** | **86%** | **92%** | **88%** | Équilibrage toutes catégories ✅ |
+
+**Gain total:** +36% artisans, +2.4 points score, 86% succès global
+
+### Solution finale : Prompt V4
+
+**Améliorations clés:**
+1. **Catégorisation renforcée** : food/retail/service/tech/artisan/niche
+2. **Exemples par catégorie** avec émojis (🍽️💼💻🔧)
+3. **Mots interdits explicites** : "conception de", "exploration de", "conseil en", etc.
+4. **Ton impersonnel strict** : 20+ exemples ❌/✅
+5. **Règle expertises** : Génération basée sur expertises fournies (ou déduites)
+
+### Intégration Code
+
+**Fichiers créés:**
+- `servicesPromptV4.ts` : Prompt optimisé + buildExpertisesBlock()
+- `aiValidation.ts` : Validation post-génération + retry automatique (max 2)
+
+**Fichier modifié:**
+- `aiEnrichmentServiceV4.ts` : enrichServices() refactorisé avec wrapper validation
+
+**Flow de validation:**
+```
+generateServicesWithValidation(callAI, data, maxRetries=2)
+  → Tentative 1 → validate → OK ? retour : retry
+  → Tentative 2 → validate → OK ? retour : warning + dernier résultat
+```
+
+**Critères validation:**
+- ❌ Ton personnel détecté (je/j'/nous/n'/notre/nos/mon/ma/mes)
+- ❌ Vocabulaire consulting pour food/retail
+- ⚠️ Longueur <20 ou >70 mots
+
+### Impact attendu
+
+**Avant (sans retry):**
+- Score : 94.3
+- Succès : 80%
+- Cas limites fréquents
+
+**Après (avec retry):**
+- Score : **>98/100** (estimé)
+- Succès : **>95%** (estimé)
+- Cas limites réduits à ~5% (edge cases DeepSeek)
+
+**Bénéfice utilisateur:**
+- Génération services plus professionnelle
+- Moins de "je/nous" dans portfolios artisans
+- Pas de vocabulaire consulting dans commerces (coffee shop, fleuriste, etc.)
+- Respect des expertises fournies
+
+### Tests à effectuer
+
+| Cas | Activité | Attendu |
+|-----|----------|---------|
+| 1 | Coffee shop | Produits (cafés, pâtisseries) PAS "conception de menus" |
+| 2 | Plombier | "Intervention rapide" PAS "J'interviens rapidement" |
+| 3 | Avocat | "Accompagnement divorce" PAS "Je vous accompagne" |
+| 4 | Graphiste | "Création identités visuelles" PAS "Je crée" |
+
+**Commit:** `40a7bc2` (branch `perf-optimization-phase1`)
+
+### Leçon apprise
+
+**Itération guidée par data > intuition**
+- 4 loops = 200 tests = feedback objectif
+- Chaque modif impacte différentes catégories (trade-offs)
+- Équilibrage nécessaire entre toutes les catégories
+- Retry automatique compense variance aléatoire IA
+
