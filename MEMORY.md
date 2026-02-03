@@ -1,5 +1,57 @@
 # MEMORY.md - Mémoire à long terme
 
+## 🧙 Wizard Portfolio V2 - Implémentation complète (3 février 2026)
+
+**Commit** : `13af4bf` - feat(wizard): Implémentation Wizard V2 complet  
+**Documentation** : `SOUVERAIN/WIZARD-V2-IMPLEMENTATION.md`
+
+### Résumé des changements
+
+**Objectif** : Simplifier le wizard (6 steps), ajouter le positionnement (valueProp + expertises) pour guider l'IA, génération automatique des services, preview éditable.
+
+#### 1. Types (PortfolioFormDataV2)
+- ✅ Ajout `valueProp: string` - Proposition de valeur
+- ✅ Ajout `expertises: string[]` - 3 expertises clés
+
+#### 2. Step 2 : Réalisations
+- ✅ Encart Positionnement avec gradient bleu/violet
+- ✅ Champ valueProp (150 chars max)
+- ✅ 3 champs expertises (50 chars max chacun)
+- ✅ Séparateur visuel avant import projets
+
+#### 3. Service IA V4 (aiEnrichmentServiceV4.ts)
+- ✅ Génération séquencée en 3 appels API :
+  - **Hero + About** : basé sur valueProp (60-80 mots)
+  - **Services** : transforme expertises en 3 services (35-45 mots/service) OU déduit des réalisations si vide
+  - **Projets** : descriptions enrichies (60-80 mots) qui renforcent le positionnement
+- ✅ Anonymisation/désanonymisation automatique
+- ✅ Label dynamique ("Services", "Savoir-faire", "Spécialités", etc.)
+
+#### 4. CSS partagés (templates/_shared/)
+- ✅ `_layout-adaptive.css` : Layout adaptatif (1 projet → horizontal, 2+ → grille)
+- ✅ `_typography.css` : Texte justifié, hyphenation
+- ✅ `_editable.css` : Styles contenteditable + indicateur modified
+- ✅ `README.md` : Documentation complète
+
+#### 5. Preview éditable (EditablePreviewScreen.tsx)
+- ✅ Injection `contenteditable="true"` sur tous les textes
+- ✅ Attribut `data-original` pour le reset
+- ✅ Toolbar avec "💡 Cliquez pour modifier" + bouton "↺ Tout réinitialiser"
+- ✅ Indicateur visuel des modifications (barre bleue)
+
+### Intégration restante (TODO)
+- 🚧 Connecter `aiEnrichmentServiceV4` dans `WizardStepGeneration.tsx`
+- 🚧 Injecter `data-count` dans les templates pour fallback CSS
+- 🚧 Migrer templates HTML monolithiques vers CSS partagés
+
+### Tests à effectuer
+1. Avec positionnement complet → Services = expertises
+2. Sans positionnement → IA déduit du PDF
+3. Preview éditable → Modifications + Reset fonctionne
+4. Layout adaptatif → 1 projet horizontal, 3+ grille
+
+---
+
 ## 📐 Design System CALM-UI (SOUVERAIN)
 
 **Fichier de référence** : `/home/ubuntu/clawd/SOUVERAIN/src/components/ui.tsx`
