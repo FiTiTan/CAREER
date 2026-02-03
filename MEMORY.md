@@ -1,9 +1,14 @@
 # MEMORY.md - Mémoire à long terme
 
-## 🧙 Wizard Portfolio V2 - Implémentation complète (3 février 2026)
+## 🧙 Wizard Portfolio V2 + 2 systèmes d'édition (3 février 2026)
 
-**Commit** : `13af4bf` - feat(wizard): Implémentation Wizard V2 complet  
-**Documentation** : `SOUVERAIN/WIZARD-V2-IMPLEMENTATION.md`
+**Commits** :
+- `13af4bf` - Wizard V2 complet
+- `6d74a0b` - Debug logs realisations
+- `d4c3bb3` - 2 systèmes d'édition séparés ✅
+- `b8bbe2d` - Documentation complète
+
+**Documentation** : `SOUVERAIN/IMPLEMENTATION-2-SYSTEMES-EDITION.md`
 
 ### Résumé des changements
 
@@ -39,16 +44,41 @@
 - ✅ Toolbar avec "💡 Cliquez pour modifier" + bouton "↺ Tout réinitialiser"
 - ✅ Indicateur visuel des modifications (barre bleue)
 
+### Implémentation 2 systèmes d'édition (CLEAN)
+
+**Architecture propre** :
+- **BRIEF 1** (Contenteditable basique) : `injectEditableFeatures()` dans EditablePreviewScreen
+- **BRIEF 2** (AI Rewrite) : `injectAiRewrite.ts` + `aiRewriteService.ts` (séparés)
+- Communication : postMessage iframe ↔ parent
+
+**BRIEF 1 - Édition manuelle** :
+- contenteditable="true" sur tous les textes
+- Boutons reset individuels (↺)
+- Toolbar "Tout réinitialiser"
+- Indicateur modifications (barre bleue)
+- 100% manuel, PAS d'IA
+
+**BRIEF 2 - AI Rewrite** :
+- Boutons ✨ triple sparkle au survol paragraphes
+- Popup avec textarea pour instructions ("Rends le plus percutant")
+- Appel DeepSeek/Groq pour régénérer
+- Ctrl+Enter pour régénérer, Escape pour fermer
+- Champs éligibles : heroSubtitle, aboutText, valueProp, serviceDescription, projectDescription
+
+**Rollback effectué** : Commit `342de20` (implémentation mélangée) supprimé, reparti proprement.
+
 ### Intégration restante (TODO)
 - 🚧 Connecter `aiEnrichmentServiceV4` dans `WizardStepGeneration.tsx`
+- 🚧 Extraire valueProp + expertises du HTML généré pour AI Rewrite
 - 🚧 Injecter `data-count` dans les templates pour fallback CSS
 - 🚧 Migrer templates HTML monolithiques vers CSS partagés
 
 ### Tests à effectuer
-1. Avec positionnement complet → Services = expertises
-2. Sans positionnement → IA déduit du PDF
-3. Preview éditable → Modifications + Reset fonctionne
-4. Layout adaptatif → 1 projet horizontal, 3+ grille
+1. **Wizard V2** : Positionnement complet → Services = expertises
+2. **Wizard V2** : Sans positionnement → IA déduit du PDF
+3. **BRIEF 1** : Édition manuelle + Reset → Fonctionne
+4. **BRIEF 2** : Boutons ✨ + popup + régénération IA → Fonctionne
+5. **Layout** : 1 projet horizontal, 3+ grille
 
 ---
 
