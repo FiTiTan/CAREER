@@ -47,3 +47,4 @@ vercel --prod
 ---
 
 *Projet généré par Claude Code — Février 2026*
+# Force rebuild Thu Feb  5 15:02:16 UTC 2026
