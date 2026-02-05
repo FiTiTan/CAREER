@@ -11,6 +11,9 @@ export default function CVAnalysisPage() {
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
 
+  const [hasStarted, setHasStarted] = useState(false)
+  const [pollCount, setPollCount] = useState(0)
+
   useEffect(() => {
     const fetchAnalysis = async () => {
       // Fetch analysis
@@ -23,12 +26,16 @@ export default function CVAnalysisPage() {
       if (analysisData) {
         setAnalysis(analysisData)
         
-        // Start analysis if still pending
-        if (analysisData.status === 'pending') {
+        // Start analysis ONCE if still pending
+        if (analysisData.status === 'pending' && !hasStarted) {
+          setHasStarted(true)
           fetch('/api/cv/analyze', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ analysisId: params.id })
+          }).catch(err => {
+            console.error('Analysis trigger error:', err)
+            setAnalysis({ ...analysisData, status: 'error' })
           })
         }
 
@@ -48,15 +55,18 @@ export default function CVAnalysisPage() {
 
     fetchAnalysis()
 
-    // Poll every 3 seconds for status updates (stop when done)
+    // Poll every 3 seconds for status updates (stop when done/error or after 40 polls = 2min)
     const interval = setInterval(() => {
-      if (analysis?.status !== 'done') {
+      if (analysis?.status !== 'done' && analysis?.status !== 'error' && pollCount < 40) {
+        setPollCount(prev => prev + 1)
         fetchAnalysis()
+      } else {
+        clearInterval(interval)
       }
     }, 3000)
     
     return () => clearInterval(interval)
-  }, [params.id, analysis?.status])
+  }, [params.id, analysis?.status, hasStarted, pollCount])
 
   if (loading) {
     return (

@@ -5,8 +5,11 @@ import { anonymizeCV } from '@/lib/ai/mistral'
 import { analyzeCV } from '@/lib/ai/deepseek'
 
 export async function POST(request: Request) {
+  let analysisId: string | null = null
+  
   try {
-    const { analysisId } = await request.json()
+    const body = await request.json()
+    analysisId = body.analysisId
 
     if (!analysisId) {
       return NextResponse.json({ error: 'Missing analysisId' }, { status: 400 })
@@ -98,6 +101,20 @@ export async function POST(request: Request) {
 
   } catch (error) {
     console.error('Analysis error:', error)
+    
+    // Mark as error in database if we have analysisId
+    if (analysisId) {
+      try {
+        const supabase = await createClient()
+        await supabase
+          .from('cv_analyses')
+          .update({ status: 'error' })
+          .eq('id', analysisId)
+      } catch (dbError) {
+        console.error('Failed to update error status:', dbError)
+      }
+    }
+    
     return NextResponse.json({ 
       error: error instanceof Error ? error.message : 'Internal server error' 
     }, { status: 500 })
