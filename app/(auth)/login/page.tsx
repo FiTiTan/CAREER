@@ -35,23 +35,39 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-8 shadow-xl">
+    <div style={{
+      backgroundColor: '#FFFFFF',
+      border: '1px solid #E5E5E5',
+      borderRadius: '16px',
+      padding: '2rem',
+      boxShadow: '0 10px 40px rgba(0,0,0,0.08)'
+    }}>
       {/* Logo */}
-      <Link href="/" className="flex items-center gap-2 font-semibold text-xl mb-8 w-fit">
-        <svg className="w-6 h-6 flex-shrink-0" style={{ color: '#0D9488' }} viewBox="0 0 24 24" fill="currentColor">
+      <Link href="/" style={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        gap: '0.5rem', 
+        fontWeight: 600, 
+        fontSize: '1.25rem',
+        marginBottom: '2rem',
+        textDecoration: 'none',
+        color: '#1A1A1A',
+        width: 'fit-content'
+      }}>
+        <svg style={{ width: '24px', height: '24px', flexShrink: 0, color: '#0D9488' }} viewBox="0 0 24 24" fill="currentColor">
           <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
         </svg>
         <span>CareerCare</span>
       </Link>
 
-      <h1 className="text-2xl font-semibold mb-2">Connexion</h1>
-      <p className="text-text-secondary mb-6">
+      <h1 style={{ fontSize: '1.875rem', fontWeight: 600, marginBottom: '0.5rem' }}>Connexion</h1>
+      <p style={{ color: '#6B7280', marginBottom: '1.5rem' }}>
         Entrez votre email pour recevoir un lien de connexion
       </p>
 
-      <form onSubmit={handleLogin} className="space-y-4">
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium mb-2">
+      <form onSubmit={handleLogin}>
+        <div style={{ marginBottom: '1rem' }}>
+          <label htmlFor="email" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem' }}>
             Email
           </label>
           <input
@@ -61,18 +77,35 @@ export default function LoginPage() {
             onChange={(e) => setEmail(e.target.value)}
             placeholder="jean@exemple.fr"
             required
-            className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 focus:outline-none transition-calm"
+            style={{
+              width: '100%',
+              padding: '0.75rem 1rem',
+              borderRadius: '8px',
+              backgroundColor: '#F9FAFB',
+              border: '1px solid #D1D5DB',
+              fontSize: '1rem',
+              transition: 'all 0.2s'
+            }}
+            onFocus={(e) => {
+              e.target.style.borderColor = '#0D9488'
+              e.target.style.boxShadow = '0 0 0 3px rgba(13,148,136,0.1)'
+            }}
+            onBlur={(e) => {
+              e.target.style.borderColor = '#D1D5DB'
+              e.target.style.boxShadow = 'none'
+            }}
           />
         </div>
 
         {message && (
-          <div
-            className={`p-4 rounded-lg text-sm ${
-              message.type === 'success'
-                ? 'bg-success-bg text-success-DEFAULT'
-                : 'bg-error-bg text-error-DEFAULT'
-            }`}
-          >
+          <div style={{
+            padding: '1rem',
+            borderRadius: '8px',
+            fontSize: '0.875rem',
+            marginBottom: '1rem',
+            backgroundColor: message.type === 'success' ? '#DCFCE7' : '#FEE2E2',
+            color: message.type === 'success' ? '#16A34A' : '#DC2626'
+          }}>
             {message.text}
           </div>
         )}
@@ -80,19 +113,38 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full px-4 py-3 rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-medium hover:bg-gray-800 dark:hover:bg-gray-100 disabled:opacity-50 transition-calm"
+          style={{
+            width: '100%',
+            padding: '0.75rem 1rem',
+            borderRadius: '8px',
+            backgroundColor: '#1F2937',
+            color: '#FFFFFF',
+            fontWeight: 500,
+            border: 'none',
+            cursor: loading ? 'not-allowed' : 'pointer',
+            opacity: loading ? 0.5 : 1,
+            transition: 'all 0.2s'
+          }}
+          onMouseEnter={(e) => !loading && (e.currentTarget.style.backgroundColor = '#374151')}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#1F2937')}
         >
           {loading ? 'Envoi...' : 'Envoyer le lien'}
         </button>
       </form>
 
-      <div className="mt-6 text-center">
-        <Link href="/" className="text-sm text-text-secondary hover:text-text-primary transition-calm">
+      <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
+        <Link href="/" style={{ fontSize: '0.875rem', color: '#6B7280', textDecoration: 'none' }}>
           ← Retour à l'accueil
         </Link>
       </div>
 
-      <div className="mt-6 pt-6 border-t border-border-light text-xs text-text-tertiary">
+      <div style={{ 
+        marginTop: '1.5rem', 
+        paddingTop: '1.5rem', 
+        borderTop: '1px solid #E5E5E5', 
+        fontSize: '0.75rem', 
+        color: '#9CA3AF' 
+      }}>
         Pas de mot de passe nécessaire. Nous vous envoyons un lien de connexion sécurisé par email.
       </div>
     </div>
