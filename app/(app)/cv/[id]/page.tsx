@@ -7,27 +7,40 @@ import { createClient } from '@/lib/supabase/client'
 export default function CVAnalysisPage() {
   const params = useParams()
   const [analysis, setAnalysis] = useState<any>(null)
+  const [results, setResults] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
 
   useEffect(() => {
     const fetchAnalysis = async () => {
-      const { data, error } = await supabase
+      // Fetch analysis
+      const { data: analysisData } = await supabase
         .from('cv_analyses')
         .select('*')
         .eq('id', params.id)
         .single()
 
-      if (data) {
-        setAnalysis(data)
+      if (analysisData) {
+        setAnalysis(analysisData)
         
         // Start analysis if still pending
-        if (data.status === 'pending') {
+        if (analysisData.status === 'pending') {
           fetch('/api/cv/analyze', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ analysisId: params.id })
           })
+        }
+
+        // Fetch results if done
+        if (analysisData.status === 'done') {
+          const { data: resultsData } = await supabase
+            .from('cv_results')
+            .select('*')
+            .eq('analysis_id', params.id)
+            .single()
+          
+          if (resultsData) setResults(resultsData)
         }
       }
       setLoading(false)
@@ -35,10 +48,15 @@ export default function CVAnalysisPage() {
 
     fetchAnalysis()
 
-    // Poll every 3 seconds for status updates
-    const interval = setInterval(fetchAnalysis, 3000)
+    // Poll every 3 seconds for status updates (stop when done)
+    const interval = setInterval(() => {
+      if (analysis?.status !== 'done') {
+        fetchAnalysis()
+      }
+    }, 3000)
+    
     return () => clearInterval(interval)
-  }, [params.id])
+  }, [params.id, analysis?.status])
 
   if (loading) {
     return (
@@ -178,23 +196,142 @@ export default function CVAnalysisPage() {
             </div>
           )}
 
-          {analysis?.status === 'done' && (
-            <div style={{
-              padding: '1.5rem',
-              backgroundColor: '#DCFCE7',
-              border: '1px solid #86EFAC',
-              borderRadius: '12px',
-              marginBottom: '2rem',
-              textAlign: 'center'
-            }}>
-              <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>✨</div>
-              <div style={{ fontWeight: 600, color: '#166534', fontSize: '1.25rem' }}>
-                Analyse terminée !
+          {analysis?.status === 'done' && results && (
+            <>
+              {/* Score Global */}
+              <div style={{
+                padding: '2rem',
+                backgroundColor: '#DCFCE7',
+                border: '1px solid #86EFAC',
+                borderRadius: '12px',
+                marginBottom: '2rem',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '0.875rem', color: '#15803D', marginBottom: '0.5rem', textTransform: 'uppercase', fontWeight: 600 }}>
+                  Score Global
+                </div>
+                <div style={{ fontSize: '4rem', fontWeight: 700, color: '#166534' }}>
+                  {results.score_global}
+                </div>
+                <div style={{ fontSize: '1rem', color: '#15803D' }}>
+                  / 100
+                </div>
               </div>
-              <div style={{ fontSize: '0.875rem', color: '#15803D', marginTop: '0.5rem' }}>
-                Votre rapport complet sera bientôt disponible
+
+              {/* Diagnostic */}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gap: '1rem',
+                marginBottom: '2rem'
+              }}>
+                <div style={{ padding: '1rem', backgroundColor: '#F9FAFB', borderRadius: '8px' }}>
+                  <div style={{ fontSize: '0.75rem', color: '#6B7280', marginBottom: '0.25rem' }}>MÉTIER</div>
+                  <div style={{ fontWeight: 600 }}>{results.diagnostic.metier}</div>
+                </div>
+                <div style={{ padding: '1rem', backgroundColor: '#F9FAFB', borderRadius: '8px' }}>
+                  <div style={{ fontSize: '0.75rem', color: '#6B7280', marginBottom: '0.25rem' }}>SECTEUR</div>
+                  <div style={{ fontWeight: 600 }}>{results.diagnostic.secteur}</div>
+                </div>
+                <div style={{ padding: '1rem', backgroundColor: '#F9FAFB', borderRadius: '8px' }}>
+                  <div style={{ fontSize: '0.75rem', color: '#6B7280', marginBottom: '0.25rem' }}>NIVEAU</div>
+                  <div style={{ fontWeight: 600 }}>{results.diagnostic.niveau}</div>
+                </div>
+                <div style={{ padding: '1rem', backgroundColor: '#F9FAFB', borderRadius: '8px' }}>
+                  <div style={{ fontSize: '0.75rem', color: '#6B7280', marginBottom: '0.25rem' }}>EXPÉRIENCE</div>
+                  <div style={{ fontWeight: 600 }}>{results.diagnostic.experience}</div>
+                </div>
               </div>
-            </div>
+
+              {/* Scores détaillés */}
+              <div style={{ marginBottom: '2rem' }}>
+                <h3 style={{ fontWeight: 600, marginBottom: '1rem' }}>Analyse détaillée</h3>
+                {Object.entries(results.scores).map(([key, value]: [string, any]) => (
+                  <div key={key} style={{ marginBottom: '1rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                      <span style={{ textTransform: 'capitalize' }}>{key}</span>
+                      <span style={{ fontWeight: 600, color: value >= 70 ? '#16A34A' : value >= 50 ? '#EAB308' : '#DC2626' }}>
+                        {value}
+                      </span>
+                    </div>
+                    <div style={{ 
+                      height: '8px', 
+                      backgroundColor: '#F3F4F6', 
+                      borderRadius: '999px', 
+                      overflow: 'hidden' 
+                    }}>
+                      <div style={{
+                        height: '100%',
+                        width: `${value}%`,
+                        backgroundColor: value >= 70 ? '#16A34A' : value >= 50 ? '#EAB308' : '#DC2626',
+                        borderRadius: '999px',
+                        transition: 'width 0.5s'
+                      }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Forces & Faiblesses */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+                <div style={{ padding: '1.5rem', backgroundColor: '#DCFCE7', borderRadius: '12px' }}>
+                  <div style={{ fontWeight: 600, marginBottom: '1rem', color: '#166534' }}>✅ Points forts</div>
+                  <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                    {results.forces.map((force: string, i: number) => (
+                      <li key={i} style={{ marginBottom: '0.5rem', fontSize: '0.875rem', paddingLeft: '1rem', position: 'relative' }}>
+                        <span style={{ position: 'absolute', left: 0 }}>•</span>
+                        {force}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div style={{ padding: '1.5rem', backgroundColor: '#FEF9C3', borderRadius: '12px' }}>
+                  <div style={{ fontWeight: 600, marginBottom: '1rem', color: '#854D0E' }}>⚠️ À améliorer</div>
+                  <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                    {results.faiblesses.map((faiblesse: string, i: number) => (
+                      <li key={i} style={{ marginBottom: '0.5rem', fontSize: '0.875rem', paddingLeft: '1rem', position: 'relative' }}>
+                        <span style={{ position: 'absolute', left: 0 }}>•</span>
+                        {faiblesse}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              {/* Recommandations */}
+              <div style={{ padding: '1.5rem', backgroundColor: '#DBEAFE', borderRadius: '12px' }}>
+                <div style={{ fontWeight: 600, marginBottom: '1rem', color: '#1E40AF' }}>💡 Plan d'action</div>
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                  {results.recommandations.map((reco: string, i: number) => (
+                    <li key={i} style={{ 
+                      marginBottom: '0.75rem', 
+                      fontSize: '0.875rem',
+                      paddingLeft: '2rem',
+                      position: 'relative'
+                    }}>
+                      <span style={{ 
+                        position: 'absolute', 
+                        left: 0,
+                        width: '24px',
+                        height: '24px',
+                        backgroundColor: '#3B82F6',
+                        color: '#FFF',
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '0.75rem',
+                        fontWeight: 600
+                      }}>
+                        {i + 1}
+                      </span>
+                      {reco}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </>
           )}
 
           {/* Next Steps */}

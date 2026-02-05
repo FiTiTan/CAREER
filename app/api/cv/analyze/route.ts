@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { extractTextFromPDF } from '@/lib/pdf'
 import { anonymizeCV } from '@/lib/ai/mistral'
+import { analyzeCV } from '@/lib/ai/deepseek'
 
 export async function POST(request: Request) {
   try {
@@ -67,8 +68,24 @@ export async function POST(request: Request) {
       })
       .eq('id', analysisId)
 
-    // 5. TODO: Send to DeepSeek for analysis
-    // For now, just mark as done
+    // 5. Analyze with DeepSeek
+    const analysisResult = await analyzeCV(anonymizedText)
+
+    // 6. Save results to database
+    await supabase
+      .from('cv_results')
+      .insert({
+        analysis_id: analysisId,
+        score_global: analysisResult.score_global,
+        scores: analysisResult.scores,
+        diagnostic: analysisResult.diagnostic,
+        forces: analysisResult.forces,
+        faiblesses: analysisResult.faiblesses,
+        recommandations: analysisResult.recommandations,
+        raw_response: analysisResult
+      })
+
+    // 7. Mark as done
     await supabase
       .from('cv_analyses')
       .update({ status: 'done' })
@@ -76,7 +93,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ 
       success: true,
-      message: 'Analysis completed (DeepSeek integration pending)'
+      message: 'Analysis completed successfully'
     })
 
   } catch (error) {
