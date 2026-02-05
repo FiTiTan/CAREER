@@ -35,7 +35,7 @@ export default function Header() {
           </Link>
           <Link
             href="/cv/new"
-            className="px-4 py-2 rounded-full bg-gray-800 text-white text-sm font-medium hover:bg-gray-800-hover transition-calm"
+            className="px-4 py-2 rounded-pill bg-anthracite text-white text-sm font-medium hover:bg-anthracite-hover transition-calm"
           >
             Analyser mon CV
           </Link>

@@ -90,3 +90,44 @@ body {
 .transition-calm {
   transition: all 0.2s ease-in-out;
 }
+
+/* Custom Tailwind utilities */
+@layer utilities {
+  .rounded-pill {
+    border-radius: 9999px;
+  }
+  
+  .bg-anthracite {
+    background-color: #2D2D2D;
+  }
+  
+  .bg-anthracite:hover {
+    background-color: #404040;
+  }
+  
+  .text-accent-teal {
+    color: #0D9488;
+  }
+  
+  .bg-accent-teal-bg {
+    background-color: var(--accent-teal-bg);
+  }
+  
+  .bg-accent-violet-bg {
+    background-color: var(--accent-violet-bg);
+  }
+  
+  .bg-accent-amber-bg {
+    background-color: var(--accent-amber-bg);
+  }
+  
+  .from-accent-teal {
+    --tw-gradient-from: #0D9488;
+    --tw-gradient-to: rgb(13 148 136 / 0);
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+  }
+  
+  .to-accent-violet {
+    --tw-gradient-to: #7C3AED;
+  }
+}

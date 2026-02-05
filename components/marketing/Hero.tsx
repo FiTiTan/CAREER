@@ -5,7 +5,7 @@ export default function Hero() {
     <section className="min-h-screen flex items-center justify-center px-6 pt-16">
       <div className="max-w-4xl mx-auto text-center">
         {/* Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6" style={{ backgroundColor: '#CCFBF1' }}>
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-pill bg-accent-teal-bg mb-6">
           <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
           </svg>
@@ -28,13 +28,13 @@ export default function Hero() {
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link
             href="/cv/new"
-            className="px-8 py-4 rounded-full bg-gray-800 text-white font-medium hover:bg-gray-800-hover transition-calm"
+            className="px-8 py-4 rounded-pill bg-anthracite text-white font-medium hover:bg-anthracite-hover transition-calm"
           >
             Analyser mon CV gratuitement
           </Link>
           <Link
             href="#features"
-            className="px-8 py-4 rounded-full border border-gray-200 bg-white hover:bg-gray-50 transition-calm font-medium"
+            className="px-8 py-4 rounded-pill border border-gray-200 bg-white hover:bg-gray-50 transition-calm font-medium"
           >
             En savoir plus
           </Link>
