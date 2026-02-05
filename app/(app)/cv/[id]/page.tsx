@@ -18,11 +18,26 @@ export default function CVAnalysisPage() {
         .eq('id', params.id)
         .single()
 
-      if (data) setAnalysis(data)
+      if (data) {
+        setAnalysis(data)
+        
+        // Start analysis if still pending
+        if (data.status === 'pending') {
+          fetch('/api/cv/analyze', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ analysisId: params.id })
+          })
+        }
+      }
       setLoading(false)
     }
 
     fetchAnalysis()
+
+    // Poll every 3 seconds for status updates
+    const interval = setInterval(fetchAnalysis, 3000)
+    return () => clearInterval(interval)
   }, [params.id])
 
   if (loading) {
@@ -118,32 +133,69 @@ export default function CVAnalysisPage() {
           </div>
 
           {/* Status */}
-          <div style={{
-            padding: '1.5rem',
-            backgroundColor: '#FEF9C3',
-            border: '1px solid #FDE047',
-            borderRadius: '12px',
-            marginBottom: '2rem'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <div style={{
-                width: '20px',
-                height: '20px',
-                border: '2px solid #CA8A04',
-                borderTop: '2px solid transparent',
-                borderRadius: '50%',
-                animation: 'spin 1s linear infinite'
-              }} />
-              <div>
-                <div style={{ fontWeight: 600, color: '#854D0E' }}>
-                  Analyse en cours...
-                </div>
-                <div style={{ fontSize: '0.875rem', color: '#A16207', marginTop: '0.25rem' }}>
-                  L'analyse IA de votre CV démarrera automatiquement
+          {analysis?.status !== 'done' && (
+            <div style={{
+              padding: '1.5rem',
+              backgroundColor: analysis?.status === 'error' ? '#FEE2E2' : '#FEF9C3',
+              border: `1px solid ${analysis?.status === 'error' ? '#FCA5A5' : '#FDE047'}`,
+              borderRadius: '12px',
+              marginBottom: '2rem'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                {analysis?.status !== 'error' && (
+                  <div style={{
+                    width: '20px',
+                    height: '20px',
+                    border: '2px solid #CA8A04',
+                    borderTop: '2px solid transparent',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite'
+                  }} />
+                )}
+                <div>
+                  <div style={{ 
+                    fontWeight: 600, 
+                    color: analysis?.status === 'error' ? '#991B1B' : '#854D0E' 
+                  }}>
+                    {analysis?.status === 'pending' && 'Démarrage de l\'analyse...'}
+                    {analysis?.status === 'extracting' && 'Extraction du texte PDF...'}
+                    {analysis?.status === 'anonymizing' && 'Anonymisation RGPD en cours...'}
+                    {analysis?.status === 'analyzing' && 'Analyse IA (DeepSeek)...'}
+                    {analysis?.status === 'error' && '❌ Erreur lors de l\'analyse'}
+                  </div>
+                  <div style={{ 
+                    fontSize: '0.875rem', 
+                    color: analysis?.status === 'error' ? '#B91C1C' : '#A16207', 
+                    marginTop: '0.25rem' 
+                  }}>
+                    {analysis?.status === 'error' 
+                      ? 'Une erreur est survenue. Veuillez réessayer.'
+                      : 'Veuillez patienter...'
+                    }
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
+
+          {analysis?.status === 'done' && (
+            <div style={{
+              padding: '1.5rem',
+              backgroundColor: '#DCFCE7',
+              border: '1px solid #86EFAC',
+              borderRadius: '12px',
+              marginBottom: '2rem',
+              textAlign: 'center'
+            }}>
+              <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>✨</div>
+              <div style={{ fontWeight: 600, color: '#166534', fontSize: '1.25rem' }}>
+                Analyse terminée !
+              </div>
+              <div style={{ fontSize: '0.875rem', color: '#15803D', marginTop: '0.5rem' }}>
+                Votre rapport complet sera bientôt disponible
+              </div>
+            </div>
+          )}
 
           {/* Next Steps */}
           <div>
