@@ -37,12 +37,12 @@ export default function LoginPage() {
   return (
     <div className="bg-bg-secondary border border-border-light rounded-2xl p-8">
       {/* Logo */}
-      <div className="flex items-center gap-2 font-semibold text-xl mb-8">
+      <Link href="/" className="flex items-center gap-2 font-semibold text-xl mb-8">
         <svg className="w-6 h-6 text-accent-teal-DEFAULT" viewBox="0 0 24 24" fill="currentColor">
           <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
         </svg>
         CareerCare
-      </div>
+      </Link>
 
       <h1 className="text-2xl font-semibold mb-2">Connexion</h1>
       <p className="text-text-secondary mb-6">
