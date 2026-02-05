@@ -35,7 +35,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="bg-bg-secondary border border-border-light rounded-2xl p-8">
+    <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-8 shadow-xl">
       {/* Logo */}
       <Link href="/" className="flex items-center gap-2 font-semibold text-xl mb-8 w-fit">
         <svg className="w-6 h-6 flex-shrink-0" style={{ color: '#0D9488' }} viewBox="0 0 24 24" fill="currentColor">
@@ -61,7 +61,7 @@ export default function LoginPage() {
             onChange={(e) => setEmail(e.target.value)}
             placeholder="jean@exemple.fr"
             required
-            className="w-full px-4 py-3 rounded-lg bg-bg-tertiary border border-border-light focus:border-accent-teal-DEFAULT focus:outline-none transition-calm"
+            className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 focus:outline-none transition-calm"
           />
         </div>
 
@@ -80,7 +80,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full px-4 py-3 rounded-lg bg-anthracite text-white font-medium hover:bg-anthracite-hover disabled:opacity-50 transition-calm"
+          className="w-full px-4 py-3 rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-medium hover:bg-gray-800 dark:hover:bg-gray-100 disabled:opacity-50 transition-calm"
         >
           {loading ? 'Envoi...' : 'Envoyer le lien'}
         </button>
