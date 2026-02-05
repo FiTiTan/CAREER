@@ -1,4 +1,6 @@
-# CareerCare — Le premier Career OS français
+# CareerCare
+
+Le premier Career OS français 🚀 — Le premier Career OS français
 
 > Prenez soin de votre carrière
 
