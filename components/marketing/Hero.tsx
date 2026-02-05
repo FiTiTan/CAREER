@@ -5,11 +5,11 @@ export default function Hero() {
     <section className="min-h-screen flex items-center justify-center px-6 pt-16">
       <div className="max-w-4xl mx-auto text-center">
         {/* Badge */}
-        <div className="inline-flex items-center gap-3 px-6 py-3 rounded-pill bg-accent-teal-bg mb-8">
-          <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-pill bg-accent-teal-bg mb-8">
+          <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
           </svg>
-          <span className="text-sm font-medium text-accent-teal">
+          <span className="text-[14px] font-medium text-accent-teal">
             Le premier Career OS français
           </span>
         </div>
