@@ -41,7 +41,7 @@ export default function Features() {
           <h2 className="text-4xl font-semibold mb-4">
             Une suite <span className="text-[#7C3AED]">complète</span>
           </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          <p className="text-lg text-text-secondary max-w-2xl mx-auto">
             Tous les outils pour optimiser votre présence professionnelle
           </p>
         </div>
@@ -55,13 +55,13 @@ export default function Features() {
             return (
               <div
                 key={i}
-                className="bg-white border border-gray-100 rounded-2xl p-8 hover:shadow-lg transition-calm"
+                className="bg-bg-secondary border border-border-light rounded-2xl p-8 hover:shadow-lg transition-calm"
               >
                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-6 ${bgClass} ${textClass}`}>
                   {feature.icon}
                 </div>
                 <h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
-                <p className="text-gray-600 leading-relaxed">{feature.description}</p>
+                <p className="text-text-secondary leading-relaxed">{feature.description}</p>
               </div>
             )
           })}

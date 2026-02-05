@@ -130,4 +130,44 @@ body {
   .to-accent-violet {
     --tw-gradient-to: #7C3AED;
   }
+  
+  .text-text-primary {
+    color: var(--text-primary);
+  }
+  
+  .text-text-secondary {
+    color: var(--text-secondary);
+  }
+  
+  .text-text-tertiary {
+    color: var(--text-tertiary);
+  }
+  
+  .bg-bg-secondary {
+    background-color: var(--bg-secondary);
+  }
+  
+  .bg-bg-tertiary {
+    background-color: var(--bg-tertiary);
+  }
+  
+  .hover\:bg-bg-tertiary:hover {
+    background-color: var(--bg-tertiary);
+  }
+  
+  .border-border-light {
+    border-color: var(--border-light);
+  }
+  
+  .border-border-DEFAULT {
+    border-color: var(--border-default);
+  }
+  
+  .text-success-DEFAULT {
+    color: #16A34A;
+  }
+  
+  .text-accent-violet {
+    color: #7C3AED;
+  }
 }

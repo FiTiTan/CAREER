@@ -13,7 +13,7 @@ export default function CTA() {
           </p>
           <Link
             href="/cv/new"
-            className="inline-block px-8 py-4 rounded-full bg-white text-anthracite font-medium hover:bg-gray-100 transition-calm"
+            className="inline-block px-8 py-4 rounded-full bg-bg-secondary text-anthracite font-medium hover:bg-gray-100 transition-calm"
           >
             Commencer gratuitement
           </Link>
