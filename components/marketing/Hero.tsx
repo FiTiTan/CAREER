@@ -9,14 +9,14 @@ export default function Hero() {
           <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
           </svg>
-          <span className="text-sm font-medium text-accent-teal-DEFAULT">
+          <span className="text-sm font-medium text-accent-teal">
             Le premier Career OS français
           </span>
         </div>
 
         {/* Title */}
         <h1 className="text-5xl md:text-6xl font-semibold leading-tight tracking-tight mb-6">
-          Prenez soin de votre <span className="text-accent-teal-DEFAULT">carrière</span>
+          Prenez soin de votre <span className="text-accent-teal">carrière</span>
         </h1>
 
         {/* Description */}

@@ -39,7 +39,7 @@ export default function Features() {
         {/* Header */}
         <div className="text-center mb-16">
           <h2 className="text-4xl font-semibold mb-4">
-            Une suite <span className="text-accent-violet-DEFAULT">complète</span>
+            Une suite <span className="text-accent-violet">complète</span>
           </h2>
           <p className="text-lg text-text-secondary max-w-2xl mx-auto">
             Tous les outils pour optimiser votre présence professionnelle
@@ -48,18 +48,23 @@ export default function Features() {
 
         {/* Features Grid */}
         <div className="grid md:grid-cols-3 gap-6">
-          {features.map((feature, i) => (
-            <div
-              key={i}
-              className="bg-bg-secondary border border-border-light rounded-2xl p-8 hover:shadow-lg transition-calm"
-            >
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-6 bg-accent-${feature.color}-bg text-accent-${feature.color}-DEFAULT`}>
-                {feature.icon}
+          {features.map((feature, i) => {
+            const bgClass = feature.color === 'teal' ? 'bg-accent-teal-bg' : feature.color === 'violet' ? 'bg-accent-violet-bg' : 'bg-accent-amber-bg'
+            const textClass = feature.color === 'teal' ? 'text-accent-teal' : feature.color === 'violet' ? 'text-accent-violet' : 'text-accent-amber'
+            
+            return (
+              <div
+                key={i}
+                className="bg-bg-secondary border border-border-light rounded-2xl p-8 hover:shadow-lg transition-calm"
+              >
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-6 ${bgClass} ${textClass}`}>
+                  {feature.icon}
+                </div>
+                <h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
+                <p className="text-text-secondary leading-relaxed">{feature.description}</p>
               </div>
-              <h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
-              <p className="text-text-secondary leading-relaxed">{feature.description}</p>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
     </section>

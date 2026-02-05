@@ -36,23 +36,15 @@ const config: Config = {
           hover: 'var(--anthracite-hover)',
         },
         // Accents
-        accent: {
-          teal: {
-            DEFAULT: '#0D9488',
-            light: '#14B8A6',
-            bg: 'var(--accent-teal-bg)',
-          },
-          violet: {
-            DEFAULT: '#7C3AED',
-            light: '#8B5CF6',
-            bg: 'var(--accent-violet-bg)',
-          },
-          amber: {
-            DEFAULT: '#D97706',
-            light: '#F59E0B',
-            bg: 'var(--accent-amber-bg)',
-          },
-        },
+        'accent-teal': '#0D9488',
+        'accent-teal-light': '#14B8A6',
+        'accent-teal-bg': 'var(--accent-teal-bg)',
+        'accent-violet': '#7C3AED',
+        'accent-violet-light': '#8B5CF6',
+        'accent-violet-bg': 'var(--accent-violet-bg)',
+        'accent-amber': '#D97706',
+        'accent-amber-light': '#F59E0B',
+        'accent-amber-bg': 'var(--accent-amber-bg)',
         // Semantic
         success: { DEFAULT: '#16A34A', bg: 'var(--success-bg)' },
         warning: { DEFAULT: '#CA8A04', bg: 'var(--warning-bg)' },

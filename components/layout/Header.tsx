@@ -6,7 +6,7 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 font-semibold text-lg">
-          <svg className="w-6 h-6 text-accent-teal-DEFAULT" viewBox="0 0 24 24" fill="currentColor">
+          <svg className="w-6 h-6 text-accent-teal" viewBox="0 0 24 24" fill="currentColor">
             <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
           </svg>
           CareerCare
