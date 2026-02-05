@@ -4,7 +4,7 @@ export default function CTA() {
   return (
     <section className="py-24 px-6">
       <div className="max-w-4xl mx-auto">
-        <div className="bg-gradient-to-br from-accent-teal to-accent-violet rounded-2xl p-12 text-center text-white">
+        <div className="bg-gradient-to-br from-[#0D9488] to-[#7C3AED] rounded-2xl p-12 text-center text-white">
           <h2 className="text-3xl md:text-4xl font-semibold mb-4">
             Prêt à booster votre carrière ?
           </h2>

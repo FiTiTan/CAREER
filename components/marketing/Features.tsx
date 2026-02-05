@@ -39,7 +39,7 @@ export default function Features() {
         {/* Header */}
         <div className="text-center mb-16">
           <h2 className="text-4xl font-semibold mb-4">
-            Une suite <span className="text-accent-violet">complète</span>
+            Une suite <span className="text-[#7C3AED]">complète</span>
           </h2>
           <p className="text-lg text-text-secondary max-w-2xl mx-auto">
             Tous les outils pour optimiser votre présence professionnelle
@@ -49,8 +49,8 @@ export default function Features() {
         {/* Features Grid */}
         <div className="grid md:grid-cols-3 gap-6">
           {features.map((feature, i) => {
-            const bgClass = feature.color === 'teal' ? 'bg-accent-teal-bg' : feature.color === 'violet' ? 'bg-accent-violet-bg' : 'bg-accent-amber-bg'
-            const textClass = feature.color === 'teal' ? 'text-accent-teal' : feature.color === 'violet' ? 'text-accent-violet' : 'text-accent-amber'
+            const bgClass = feature.color === 'teal' ? 'bg-[var(--accent-teal-bg)]' : feature.color === 'violet' ? 'bg-[var(--accent-violet-bg)]' : 'bg-[var(--accent-amber-bg)]'
+            const textClass = feature.color === 'teal' ? 'text-[#0D9488]' : feature.color === 'violet' ? 'text-[#7C3AED]' : 'text-[#D97706]'
             
             return (
               <div

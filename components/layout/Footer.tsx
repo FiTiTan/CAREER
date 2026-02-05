@@ -8,7 +8,7 @@ export default function Footer() {
           {/* Brand */}
           <div>
             <div className="flex items-center gap-2 font-semibold text-lg mb-4">
-              <svg className="w-6 h-6 text-accent-teal" viewBox="0 0 24 24" fill="currentColor">
+              <svg className="w-6 h-6 text-[#0D9488]" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
               </svg>
               CareerCare

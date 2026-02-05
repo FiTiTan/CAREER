@@ -5,18 +5,18 @@ export default function Hero() {
     <section className="min-h-screen flex items-center justify-center px-6 pt-16">
       <div className="max-w-4xl mx-auto text-center">
         {/* Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-pill bg-accent-teal-bg mb-6">
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-pill bg-[var(--accent-teal-bg)] mb-6">
           <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
           </svg>
-          <span className="text-sm font-medium text-accent-teal">
+          <span className="text-sm font-medium text-[#0D9488]">
             Le premier Career OS français
           </span>
         </div>
 
         {/* Title */}
         <h1 className="text-5xl md:text-6xl font-semibold leading-tight tracking-tight mb-6">
-          Prenez soin de votre <span className="text-accent-teal">carrière</span>
+          Prenez soin de votre <span className="text-[#0D9488]">carrière</span>
         </h1>
 
         {/* Description */}
