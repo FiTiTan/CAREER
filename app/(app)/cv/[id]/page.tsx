@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
@@ -11,10 +11,12 @@ export default function CVAnalysisPage() {
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
 
-  const [hasStarted, setHasStarted] = useState(false)
-  const [pollCount, setPollCount] = useState(0)
+  const hasStartedRef = useRef(false)
+  const pollCountRef = useRef(0)
 
   useEffect(() => {
+    let interval: NodeJS.Timeout | null = null
+
     const fetchAnalysis = async () => {
       // Fetch analysis
       const { data: analysisData } = await supabase
@@ -27,8 +29,8 @@ export default function CVAnalysisPage() {
         setAnalysis(analysisData)
         
         // Start analysis ONCE if still pending
-        if (analysisData.status === 'pending' && !hasStarted) {
-          setHasStarted(true)
+        if (analysisData.status === 'pending' && !hasStartedRef.current) {
+          hasStartedRef.current = true
           fetch('/api/cv/analyze', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -48,6 +50,12 @@ export default function CVAnalysisPage() {
             .single()
           
           if (resultsData) setResults(resultsData)
+          if (interval) clearInterval(interval)
+        }
+
+        // Stop polling on error or max attempts
+        if (analysisData.status === 'error' || pollCountRef.current >= 40) {
+          if (interval) clearInterval(interval)
         }
       }
       setLoading(false)
@@ -55,18 +63,16 @@ export default function CVAnalysisPage() {
 
     fetchAnalysis()
 
-    // Poll every 3 seconds for status updates (stop when done/error or after 40 polls = 2min)
-    const interval = setInterval(() => {
-      if (analysis?.status !== 'done' && analysis?.status !== 'error' && pollCount < 40) {
-        setPollCount(prev => prev + 1)
-        fetchAnalysis()
-      } else {
-        clearInterval(interval)
-      }
+    // Poll every 3 seconds for status updates (max 40 polls = 2min)
+    interval = setInterval(() => {
+      pollCountRef.current += 1
+      fetchAnalysis()
     }, 3000)
     
-    return () => clearInterval(interval)
-  }, [params.id, analysis?.status, hasStarted, pollCount])
+    return () => {
+      if (interval) clearInterval(interval)
+    }
+  }, [params.id])
 
   if (loading) {
     return (
