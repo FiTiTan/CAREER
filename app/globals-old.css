@@ -4,8 +4,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ========== CALM-UI Design System v3 ========== */
-
 :root {
   /* Light mode */
   --bg-primary: #FAFAFA;
@@ -27,24 +25,13 @@
   --anthracite-hover: #404040;
   
   /* Color accents */
-  --accent-teal: #0D9488;
-  --accent-teal-light: #14B8A6;
   --accent-teal-bg: #CCFBF1;
-  
-  --accent-amber: #D97706;
-  --accent-amber-light: #F59E0B;
   --accent-amber-bg: #FEF3C7;
-  
-  --accent-violet: #7C3AED;
-  --accent-violet-light: #8B5CF6;
   --accent-violet-bg: #EDE9FE;
   
   /* Semantic */
-  --success: #16A34A;
   --success-bg: #DCFCE7;
-  --warning: #CA8A04;
   --warning-bg: #FEF9C3;
-  --error: #DC2626;
   --error-bg: #FEE2E2;
 }
 
@@ -87,17 +74,16 @@ body {
   transition: background 0.3s, color 0.3s;
 }
 
-/* Glassmorphism */
+/* Glassmorphism utility */
 .glass {
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid var(--border-light);
 }
 
 .dark .glass {
-  background: rgba(15, 15, 15, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(23, 23, 23, 0.6);
 }
 
 /* Smooth transitions */
@@ -112,15 +98,15 @@ body {
   }
   
   .bg-anthracite {
-    background-color: var(--anthracite);
+    background-color: #2D2D2D;
   }
   
-  .hover\:bg-anthracite:hover {
-    background-color: var(--anthracite-hover);
+  .bg-anthracite:hover {
+    background-color: #404040;
   }
   
   .text-accent-teal {
-    color: var(--accent-teal);
+    color: #0D9488;
   }
   
   .bg-accent-teal-bg {
@@ -135,16 +121,14 @@ body {
     background-color: var(--accent-amber-bg);
   }
   
-  .text-accent-violet {
-    color: var(--accent-violet);
-  }
-  
   .from-accent-teal {
-    --tw-gradient-from: var(--accent-teal);
+    --tw-gradient-from: #0D9488;
+    --tw-gradient-to: rgb(13 148 136 / 0);
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
   }
   
   .to-accent-violet {
-    --tw-gradient-to: var(--accent-violet);
+    --tw-gradient-to: #7C3AED;
   }
   
   .text-text-primary {
@@ -180,6 +164,10 @@ body {
   }
   
   .text-success-DEFAULT {
-    color: var(--success);
+    color: #16A34A;
+  }
+  
+  .text-accent-violet {
+    color: #7C3AED;
   }
 }
