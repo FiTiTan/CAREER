@@ -55,10 +55,31 @@ function detectMimeType(buffer: Buffer, filename?: string): string {
  * Extrait le texte d'un PDF
  */
 async function extractFromPDF(buffer: Buffer): Promise<string> {
-  const pdfParse = await import('pdf-parse');
-  const parse = (pdfParse as any).default || pdfParse;
-  const result = await parse(buffer, { max: 50 });
-  return result.text;
+  const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs');
+  
+  // Charger le document PDF
+  const loadingTask = pdfjsLib.getDocument({
+    data: new Uint8Array(buffer),
+    useSystemFonts: true,
+  });
+  
+  const pdf = await loadingTask.promise;
+  const numPages = pdf.numPages;
+  const textParts: string[] = [];
+  
+  // Extraire le texte de chaque page (max 50 pages pour éviter timeout)
+  const maxPages = Math.min(numPages, 50);
+  
+  for (let i = 1; i <= maxPages; i++) {
+    const page = await pdf.getPage(i);
+    const textContent = await page.getTextContent();
+    const pageText = textContent.items
+      .map((item: any) => item.str)
+      .join(' ');
+    textParts.push(pageText);
+  }
+  
+  return textParts.join('\n\n');
 }
 
 /**
