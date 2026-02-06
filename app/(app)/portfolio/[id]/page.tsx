@@ -5,6 +5,8 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import type { PortfolioFull, PortfolioProject, PortfolioSkill } from '@/types/portfolio'
 import { SECTORS } from '@/types/portfolio'
+import { AddProjectModal } from '@/components/portfolio/AddProjectModal'
+import { AddSkillModal } from '@/components/portfolio/AddSkillModal'
 
 type Tab = 'overview' | 'projects' | 'skills' | 'certifications' | 'education'
 
@@ -630,7 +632,32 @@ export default function PortfolioDetailPage() {
         )}
       </div>
 
-      {/* TODO: Modals for adding projects/skills */}
+      {/* Modals */}
+      {showAddProject && (
+        <AddProjectModal
+          portfolioId={id}
+          onClose={() => setShowAddProject(false)}
+          onSuccess={(project) => {
+            setPortfolio(prev => prev ? {
+              ...prev,
+              projects: [...(prev.projects || []), project]
+            } : null)
+          }}
+        />
+      )}
+
+      {showAddSkill && (
+        <AddSkillModal
+          portfolioId={id}
+          onClose={() => setShowAddSkill(false)}
+          onSuccess={(skill) => {
+            setPortfolio(prev => prev ? {
+              ...prev,
+              skills: [...(prev.skills || []), skill]
+            } : null)
+          }}
+        />
+      )}
     </div>
   )
 }
