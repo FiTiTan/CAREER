@@ -128,7 +128,7 @@ export async function POST(request: NextRequest) {
         file_path: filePath,
         file_name: file.name,
         raw_text: extractedText,
-        status: 'extracted', // Skip extraction côté serveur
+        status: 'anonymizing', // Texte déjà extrait côté client, passe direct à anonymisation
       })
       .select('id')
       .single();

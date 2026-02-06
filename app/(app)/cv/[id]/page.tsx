@@ -25,7 +25,7 @@ type CVResults = {
   [key: string]: unknown
 }
 
-type PipelineStep = 'pending' | 'extracting' | 'extracted' | 'anonymizing' | 'anonymized' | 'analyzing' | 'done' | 'error'
+type PipelineStep = 'pending' | 'extracting' | 'anonymizing' | 'analyzing' | 'deanonymizing' | 'done' | 'error'
 
 export default function CVAnalysisPage() {
   const { id } = useParams<{ id: string }>()
@@ -71,10 +71,9 @@ export default function CVAnalysisPage() {
 
     const runPipeline = async () => {
       try {
-        // Étape 1 : Extraction (skipped si déjà extracted côté client)
-        if (step === 'pending') {
-          setStep('extracting')
-          const res1 = await fetch('/api/cv/extract', {
+        // Étape 1 : Anonymisation (~5-8s) - extraction déjà faite côté client
+        if (step === 'anonymizing') {
+          const res1 = await fetch('/api/cv/anonymize', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ analysisId: id }),
@@ -82,19 +81,27 @@ export default function CVAnalysisPage() {
           
           if (!res1.ok) {
             const err = await res1.json()
-            throw new Error(err.error || 'Erreur lors de l\'extraction')
+            throw new Error(err.error || 'Erreur lors de l\'anonymisation')
           }
           
-          setStep('extracted')
+          // Le statut sera mis à jour par l'API
+          await new Promise(resolve => setTimeout(resolve, 1000))
+          
+          // Recharger l'analyse pour voir le nouveau statut
+          const { data: updatedAnalysis } = await supabase
+            .from('cv_analyses')
+            .select('*')
+            .eq('id', id)
+            .single() as { data: CVAnalysis | null }
+          
+          if (updatedAnalysis) {
+            setStep(updatedAnalysis.status as PipelineStep)
+          }
         }
 
-        // Étape 2 : Anonymisation (~5-8s)
-        if (step === 'extracted') {
-          // Petit délai pour laisser le statut se mettre à jour
-          await new Promise(resolve => setTimeout(resolve, 500))
-          setStep('anonymizing')
-          
-          const res2 = await fetch('/api/cv/anonymize', {
+        // Étape 2 : Analyse IA (~5-8s)
+        if (step === 'analyzing') {
+          const res2 = await fetch('/api/cv/analyze', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ analysisId: id }),
@@ -102,29 +109,9 @@ export default function CVAnalysisPage() {
           
           if (!res2.ok) {
             const err = await res2.json()
-            throw new Error(err.error || 'Erreur lors de l\'anonymisation')
-          }
-          
-          setStep('anonymized')
-        }
-
-        // Étape 3 : Analyse (~5-8s)
-        if (step === 'anonymized' || step === 'anonymizing') {
-          await new Promise(resolve => setTimeout(resolve, 500))
-          setStep('analyzing')
-          
-          const res3 = await fetch('/api/cv/analyze', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ analysisId: id }),
-          })
-          
-          if (!res3.ok) {
-            const err = await res3.json()
             throw new Error(err.error || 'Erreur lors de l\'analyse')
           }
           
-          const { report } = await res3.json()
           setStep('done')
           
           // Recharger les résultats depuis la base
@@ -264,11 +251,10 @@ export default function CVAnalysisPage() {
                     color: step === 'error' ? '#991B1B' : '#854D0E' 
                   }}>
                     {step === 'pending' && 'Préparation...'}
-                    {step === 'extracting' && 'Extraction du texte PDF...'}
-                    {step === 'extracted' && '✅ Extraction terminée'}
+                    {step === 'extracting' && 'Extraction du texte...'}
                     {step === 'anonymizing' && 'Anonymisation RGPD en cours...'}
-                    {step === 'anonymized' && '✅ Anonymisation terminée'}
                     {step === 'analyzing' && 'Analyse IA (DeepSeek)...'}
+                    {step === 'deanonymizing' && 'Finalisation...'}
                     {step === 'error' && `❌ ${error || 'Erreur lors de l\'analyse'}`}
                   </div>
                   <div style={{ 
@@ -432,8 +418,8 @@ export default function CVAnalysisPage() {
                 <div style={{
                   width: '24px',
                   height: '24px',
-                  backgroundColor: ['extracting', 'extracted', 'anonymizing', 'anonymized', 'analyzing', 'done'].includes(step) ? '#0D9488' : '#E5E7EB',
-                  color: ['extracting', 'extracted', 'anonymizing', 'anonymized', 'analyzing', 'done'].includes(step) ? '#FFFFFF' : '#6B7280',
+                  backgroundColor: ['anonymizing', 'analyzing', 'deanonymizing', 'done'].includes(step) ? '#0D9488' : '#E5E7EB',
+                  color: ['anonymizing', 'analyzing', 'deanonymizing', 'done'].includes(step) ? '#FFFFFF' : '#6B7280',
                   borderRadius: '50%',
                   display: 'flex',
                   alignItems: 'center',
@@ -442,27 +428,6 @@ export default function CVAnalysisPage() {
                   fontWeight: 600,
                   flexShrink: 0
                 }}>1</div>
-                <div>
-                  <div style={{ fontWeight: 500 }}>Extraction du texte</div>
-                  <div style={{ fontSize: '0.875rem', color: '#6B7280' }}>
-                    Lecture automatique de votre CV PDF
-                  </div>
-                </div>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
-                <div style={{
-                  width: '24px',
-                  height: '24px',
-                  backgroundColor: ['anonymizing', 'anonymized', 'analyzing', 'done'].includes(step) ? '#0D9488' : '#E5E7EB',
-                  color: ['anonymizing', 'anonymized', 'analyzing', 'done'].includes(step) ? '#FFFFFF' : '#6B7280',
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '0.875rem',
-                  fontWeight: 600,
-                  flexShrink: 0
-                }}>2</div>
                 <div>
                   <div style={{ fontWeight: 500 }}>Anonymisation (RGPD)</div>
                   <div style={{ fontSize: '0.875rem', color: '#6B7280' }}>
@@ -474,8 +439,8 @@ export default function CVAnalysisPage() {
                 <div style={{
                   width: '24px',
                   height: '24px',
-                  backgroundColor: ['analyzing', 'done'].includes(step) ? '#0D9488' : '#E5E7EB',
-                  color: ['analyzing', 'done'].includes(step) ? '#FFFFFF' : '#6B7280',
+                  backgroundColor: ['analyzing', 'deanonymizing', 'done'].includes(step) ? '#0D9488' : '#E5E7EB',
+                  color: ['analyzing', 'deanonymizing', 'done'].includes(step) ? '#FFFFFF' : '#6B7280',
                   borderRadius: '50%',
                   display: 'flex',
                   alignItems: 'center',
@@ -483,11 +448,11 @@ export default function CVAnalysisPage() {
                   fontSize: '0.875rem',
                   fontWeight: 600,
                   flexShrink: 0
-                }}>3</div>
+                }}>2</div>
                 <div>
                   <div style={{ fontWeight: 500 }}>Analyse IA</div>
                   <div style={{ fontSize: '0.875rem', color: '#6B7280' }}>
-                    Scoring BMAD + recommandations personnalisées
+                    Scoring BMAD via DeepSeek
                   </div>
                 </div>
               </div>

@@ -80,20 +80,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 3. Sauvegarder
+    // 3. Sauvegarder et passer au statut 'analyzing'
     await (admin as any)
       .from('cv_analyses')
       .update({
         anonymized_text: anonymization.anonymizedText,
         anonymization_map: anonymization.map,
-        status: 'anonymized',
+        status: 'analyzing', // Passe directement à l'étape suivante
       })
       .eq('id', analysisId);
 
     console.log(`[Anonymize] ✅ Done for ${analysisId}`);
 
     return NextResponse.json({
-      status: 'anonymized',
+      status: 'analyzing',
       anonymizedLength: anonymization.anonymizedText.length
     });
   } catch (error) {
