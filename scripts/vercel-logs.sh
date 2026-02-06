@@ -33,8 +33,8 @@ if [ "$STATE" = "ERROR" ] || [ "$STATE" = "FAILED" ]; then
     | tail -100
     
 elif [ "$STATE" = "BUILDING" ] || [ "$STATE" = "QUEUED" ]; then
-  echo "⏳ Build en cours... Attente de 15 secondes..."
-  sleep 15
+  echo "⏳ Build en cours... Attente de 10 secondes..."
+  sleep 10
   exec "$0" # Relancer le script
   
 elif [ "$STATE" = "READY" ]; then
