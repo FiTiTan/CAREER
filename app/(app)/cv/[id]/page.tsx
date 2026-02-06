@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
@@ -25,21 +25,19 @@ type CVResults = {
   [key: string]: unknown
 }
 
+type PipelineStep = 'pending' | 'extracting' | 'extracted' | 'anonymizing' | 'anonymized' | 'analyzing' | 'done' | 'error'
+
 export default function CVAnalysisPage() {
   const { id } = useParams<{ id: string }>()
   const [analysis, setAnalysis] = useState<CVAnalysis | null>(null)
   const [results, setResults] = useState<CVResults | null>(null)
   const [loading, setLoading] = useState(true)
+  const [step, setStep] = useState<PipelineStep>('pending')
+  const [error, setError] = useState<string | null>(null)
   const supabase = createClient()
 
-  const hasStartedRef = useRef(false)
-  const pollCountRef = useRef(0)
-
   useEffect(() => {
-    let interval: NodeJS.Timeout | null = null
-
     const fetchAnalysis = async () => {
-      // Fetch analysis
       const { data: analysisData } = await supabase
         .from('cv_analyses')
         .select('*')
@@ -48,21 +46,9 @@ export default function CVAnalysisPage() {
 
       if (analysisData) {
         setAnalysis(analysisData)
+        setStep(analysisData.status as PipelineStep)
         
-        // Start analysis ONCE if still pending
-        if (analysisData.status === 'pending' && !hasStartedRef.current) {
-          hasStartedRef.current = true
-          fetch('/api/cv/analyze', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ analysisId: id })
-          }).catch(err => {
-            console.error('Analysis trigger error:', err)
-            setAnalysis({ ...analysisData, status: 'error' })
-          })
-        }
-
-        // Fetch results if done
+        // Si déjà terminé, charger les résultats
         if (analysisData.status === 'done') {
           const { data: resultsData } = await supabase
             .from('cv_results')
@@ -71,29 +57,94 @@ export default function CVAnalysisPage() {
             .single() as { data: CVResults | null }
           
           if (resultsData) setResults(resultsData)
-          if (interval) clearInterval(interval)
-        }
-
-        // Stop polling on error or max attempts
-        if (analysisData.status === 'error' || pollCountRef.current >= 40) {
-          if (interval) clearInterval(interval)
         }
       }
       setLoading(false)
     }
 
     fetchAnalysis()
-
-    // Poll every 3 seconds for status updates (max 40 polls = 2min)
-    interval = setInterval(() => {
-      pollCountRef.current += 1
-      fetchAnalysis()
-    }, 3000)
-    
-    return () => {
-      if (interval) clearInterval(interval)
-    }
   }, [id])
+
+  // Orchestrer le pipeline une fois l'analyse chargée
+  useEffect(() => {
+    if (!analysis || loading || step === 'done' || step === 'error') return
+
+    const runPipeline = async () => {
+      try {
+        // Étape 1 : Extraction (~2s)
+        if (step === 'pending') {
+          setStep('extracting')
+          const res1 = await fetch('/api/cv/extract', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ analysisId: id }),
+          })
+          
+          if (!res1.ok) {
+            const err = await res1.json()
+            throw new Error(err.error || 'Erreur lors de l\'extraction')
+          }
+          
+          setStep('extracted')
+        }
+
+        // Étape 2 : Anonymisation (~5-8s)
+        if (step === 'extracted' || step === 'extracting') {
+          // Petit délai pour laisser le statut se mettre à jour
+          await new Promise(resolve => setTimeout(resolve, 500))
+          setStep('anonymizing')
+          
+          const res2 = await fetch('/api/cv/anonymize', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ analysisId: id }),
+          })
+          
+          if (!res2.ok) {
+            const err = await res2.json()
+            throw new Error(err.error || 'Erreur lors de l\'anonymisation')
+          }
+          
+          setStep('anonymized')
+        }
+
+        // Étape 3 : Analyse (~5-8s)
+        if (step === 'anonymized' || step === 'anonymizing') {
+          await new Promise(resolve => setTimeout(resolve, 500))
+          setStep('analyzing')
+          
+          const res3 = await fetch('/api/cv/analyze', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ analysisId: id }),
+          })
+          
+          if (!res3.ok) {
+            const err = await res3.json()
+            throw new Error(err.error || 'Erreur lors de l\'analyse')
+          }
+          
+          const { report } = await res3.json()
+          setStep('done')
+          
+          // Recharger les résultats depuis la base
+          const { data: resultsData } = await supabase
+            .from('cv_results')
+            .select('*')
+            .eq('analysis_id', id)
+            .single() as { data: CVResults | null }
+          
+          if (resultsData) setResults(resultsData)
+        }
+      } catch (err) {
+        console.error('Pipeline error:', err)
+        setError(err instanceof Error ? err.message : 'Une erreur est survenue')
+        setStep('error')
+      }
+    }
+
+    runPipeline()
+  }, [analysis, loading, step, id])
 
   if (loading) {
     return (
@@ -188,16 +239,16 @@ export default function CVAnalysisPage() {
           </div>
 
           {/* Status */}
-          {analysis?.status !== 'done' && (
+          {step !== 'done' && (
             <div style={{
               padding: '1.5rem',
-              backgroundColor: analysis?.status === 'error' ? '#FEE2E2' : '#FEF9C3',
-              border: `1px solid ${analysis?.status === 'error' ? '#FCA5A5' : '#FDE047'}`,
+              backgroundColor: step === 'error' ? '#FEE2E2' : '#FEF9C3',
+              border: `1px solid ${step === 'error' ? '#FCA5A5' : '#FDE047'}`,
               borderRadius: '12px',
               marginBottom: '2rem'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                {analysis?.status !== 'error' && (
+                {step !== 'error' && (
                   <div style={{
                     width: '20px',
                     height: '20px',
@@ -210,21 +261,23 @@ export default function CVAnalysisPage() {
                 <div>
                   <div style={{ 
                     fontWeight: 600, 
-                    color: analysis?.status === 'error' ? '#991B1B' : '#854D0E' 
+                    color: step === 'error' ? '#991B1B' : '#854D0E' 
                   }}>
-                    {analysis?.status === 'pending' && 'Démarrage de l\'analyse...'}
-                    {analysis?.status === 'extracting' && 'Extraction du texte PDF...'}
-                    {analysis?.status === 'anonymizing' && 'Anonymisation RGPD en cours...'}
-                    {analysis?.status === 'analyzing' && 'Analyse IA (DeepSeek)...'}
-                    {analysis?.status === 'error' && '❌ Erreur lors de l\'analyse'}
+                    {step === 'pending' && 'Préparation...'}
+                    {step === 'extracting' && 'Extraction du texte PDF...'}
+                    {step === 'extracted' && '✅ Extraction terminée'}
+                    {step === 'anonymizing' && 'Anonymisation RGPD en cours...'}
+                    {step === 'anonymized' && '✅ Anonymisation terminée'}
+                    {step === 'analyzing' && 'Analyse IA (DeepSeek)...'}
+                    {step === 'error' && `❌ ${error || 'Erreur lors de l\'analyse'}`}
                   </div>
                   <div style={{ 
                     fontSize: '0.875rem', 
-                    color: analysis?.status === 'error' ? '#B91C1C' : '#A16207', 
+                    color: step === 'error' ? '#B91C1C' : '#A16207', 
                     marginTop: '0.25rem' 
                   }}>
-                    {analysis?.status === 'error' 
-                      ? 'Une erreur est survenue. Veuillez réessayer.'
+                    {step === 'error' 
+                      ? 'Veuillez réessayer.'
                       : 'Veuillez patienter...'
                     }
                   </div>
@@ -233,7 +286,7 @@ export default function CVAnalysisPage() {
             </div>
           )}
 
-          {analysis?.status === 'done' && results && (
+          {step === 'done' && results && (
             <>
               {/* Score Global */}
               <div style={{
@@ -372,15 +425,15 @@ export default function CVAnalysisPage() {
           )}
 
           {/* Next Steps */}
-          <div>
+          <div style={{ marginTop: '2rem' }}>
             <h3 style={{ fontWeight: 600, marginBottom: '1rem' }}>Prochaines étapes</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
                 <div style={{
                   width: '24px',
                   height: '24px',
-                  backgroundColor: '#0D9488',
-                  color: '#FFFFFF',
+                  backgroundColor: ['extracting', 'extracted', 'anonymizing', 'anonymized', 'analyzing', 'done'].includes(step) ? '#0D9488' : '#E5E7EB',
+                  color: ['extracting', 'extracted', 'anonymizing', 'anonymized', 'analyzing', 'done'].includes(step) ? '#FFFFFF' : '#6B7280',
                   borderRadius: '50%',
                   display: 'flex',
                   alignItems: 'center',
@@ -400,8 +453,8 @@ export default function CVAnalysisPage() {
                 <div style={{
                   width: '24px',
                   height: '24px',
-                  backgroundColor: '#E5E7EB',
-                  color: '#6B7280',
+                  backgroundColor: ['anonymizing', 'anonymized', 'analyzing', 'done'].includes(step) ? '#0D9488' : '#E5E7EB',
+                  color: ['anonymizing', 'anonymized', 'analyzing', 'done'].includes(step) ? '#FFFFFF' : '#6B7280',
                   borderRadius: '50%',
                   display: 'flex',
                   alignItems: 'center',
@@ -421,8 +474,8 @@ export default function CVAnalysisPage() {
                 <div style={{
                   width: '24px',
                   height: '24px',
-                  backgroundColor: '#E5E7EB',
-                  color: '#6B7280',
+                  backgroundColor: ['analyzing', 'done'].includes(step) ? '#0D9488' : '#E5E7EB',
+                  color: ['analyzing', 'done'].includes(step) ? '#FFFFFF' : '#6B7280',
                   borderRadius: '50%',
                   display: 'flex',
                   alignItems: 'center',
@@ -443,17 +496,19 @@ export default function CVAnalysisPage() {
         </div>
 
         {/* Info Box */}
-        <div style={{
-          marginTop: '2rem',
-          padding: '1rem',
-          backgroundColor: '#DBEAFE',
-          border: '1px solid #93C5FD',
-          borderRadius: '12px',
-          fontSize: '0.875rem',
-          color: '#1E40AF'
-        }}>
-          💡 <strong>Astuce :</strong> Cette page se mettra à jour automatiquement une fois l'analyse terminée (≈30 secondes)
-        </div>
+        {step !== 'done' && (
+          <div style={{
+            marginTop: '2rem',
+            padding: '1rem',
+            backgroundColor: '#DBEAFE',
+            border: '1px solid #93C5FD',
+            borderRadius: '12px',
+            fontSize: '0.875rem',
+            color: '#1E40AF'
+          }}>
+            💡 <strong>Astuce :</strong> L'analyse se déroule en 3 étapes automatiques (15-30 secondes au total)
+          </div>
+        )}
       </div>
       
       <style jsx>{`

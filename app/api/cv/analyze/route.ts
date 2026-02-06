@@ -1,40 +1,38 @@
 // ============================================================================
-// CareerCare — API Route : Analyse CV
+// CareerCare — API Route : Analyse IA
 // POST /api/cv/analyze
 // ============================================================================
 //
-// Pipeline complet :
-// 1. Récupère le PDF depuis Storage
-// 2. Extrait le texte (pdf-parse)
-// 3. Anonymise via Mistral (EU)
-// 4. Analyse via DeepSeek (texte anonymisé)
-// 5. Stocke le résultat
-// 6. Retourne le rapport (avec dé-anonymisation si user connecté)
+// Étape 3/3 du pipeline :
+// 1. Lit anonymized_text + anonymization_map depuis la base
+// 2. Analyse via DeepSeek
+// 3. Dé-anonymise les résultats
+// 4. Sauvegarde dans cv_results
+// 5. Met le statut à 'done'
 //
-// Temps estimé : 15-30 secondes
+// Temps estimé : ~5-8s
 //
 // ============================================================================
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseAdminClient, createSupabaseServerClient } from '@/lib/supabase/server';
-import { extractTextFromDocument } from '@/lib/document-extractor';
-import { anonymizeCV, deanonymizeResults } from '@/lib/ai/anonymizer';
 import { analyzeCV } from '@/lib/ai/cv-analyzer';
+import { deanonymizeResults } from '@/lib/ai/anonymizer';
 import type { CVReport } from '@/types/cv';
 
-export const maxDuration = 60; // Vercel Pro : 60s max
+export const maxDuration = 10;
 
 interface AnalyzeRequestBody {
   analysisId: string;
 }
 
-// Types temporaires
 type CVAnalysis = {
   id: string
   user_id?: string | null
   status: string
   file_name?: string
-  file_path: string
+  anonymized_text?: string | null
+  anonymization_map?: Record<string, string> | null
   [key: string]: unknown
 }
 
@@ -44,10 +42,7 @@ type Subscription = {
 }
 
 export async function POST(request: NextRequest) {
-  const startTime = Date.now();
-
   try {
-    // 1. Valider la requête
     const body = (await request.json()) as AnalyzeRequestBody;
     const { analysisId } = body;
 
@@ -60,7 +55,7 @@ export async function POST(request: NextRequest) {
 
     const admin = createSupabaseAdminClient();
 
-    // 2. Récupérer l'analyse en base
+    // 1. Récupérer l'analyse
     const { data: analysis, error: fetchError } = await admin
       .from('cv_analyses')
       .select('*')
@@ -74,8 +69,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Vérifier si déjà terminé
     if (analysis.status === 'done') {
-      // Déjà analysé — retourner le résultat existant
       const { data: existingResult } = await admin
         .from('cv_results')
         .select('*')
@@ -84,94 +79,30 @@ export async function POST(request: NextRequest) {
 
       if (existingResult) {
         return NextResponse.json({
+          status: 'done',
           report: buildReport(analysis, existingResult),
           cached: true,
         });
       }
     }
 
-    if (
-      analysis.status !== 'pending' &&
-      analysis.status !== 'error'
-    ) {
+    if (!analysis.anonymized_text) {
       return NextResponse.json(
-        { error: `Analyse en cours (statut: ${analysis.status}). Veuillez patienter.` },
-        { status: 409 }
+        { error: 'Le texte anonymisé n\'a pas encore été créé. Appelez /api/cv/anonymize d\'abord.' },
+        { status: 400 }
       );
     }
 
-    // 3. Télécharger le PDF depuis Storage
-    await updateStatus(admin, analysisId, 'extracting');
+    // 2. Analyser via DeepSeek
+    console.log(`[Analyze] Analyzing for ${analysisId}...`);
+    await updateStatus(admin, analysisId, 'analyzing');
 
-    const { data: fileData, error: downloadError } = await admin.storage
-      .from('cv-uploads')
-      .download(analysis.file_path);
-
-    if (downloadError || !fileData) {
-      await updateStatus(admin, analysisId, 'error');
-      return NextResponse.json(
-        { error: 'Impossible de récupérer le fichier PDF.' },
-        { status: 500 }
-      );
-    }
-
-    // 4. Extraire le texte
-    const buffer = Buffer.from(await fileData.arrayBuffer());
-    let extraction;
-
-    try {
-      extraction = await extractTextFromDocument(buffer, analysis.file_name || undefined);
-    } catch (error) {
-      await updateStatus(admin, analysisId, 'error');
-      return NextResponse.json(
-        {
-          error: error instanceof Error
-            ? error.message
-            : 'Erreur lors de l\'extraction du texte.',
-        },
-        { status: 422 }
-      );
-    }
-
-    // Sauvegarder le texte brut
-    await (admin as any)
-      .from('cv_analyses')
-      .update({ raw_text: extraction.text, status: 'anonymizing' })
-      .eq('id', analysisId);
-
-    // 5. Anonymiser via Mistral (EU)
-    console.log(`[Pipeline] Anonymisation pour ${analysisId}...`);
-    let anonymization;
-
-    try {
-      anonymization = await anonymizeCV(extraction.text);
-    } catch (error) {
-      console.error('[Pipeline] Anonymization failed:', error);
-      await updateStatus(admin, analysisId, 'error');
-      return NextResponse.json(
-        { error: 'Erreur lors de l\'anonymisation. Veuillez réessayer.' },
-        { status: 500 }
-      );
-    }
-
-    // Sauvegarder le texte anonymisé + la map (EU only)
-    await (admin as any)
-      .from('cv_analyses')
-      .update({
-        anonymized_text: anonymization.anonymizedText,
-        anonymization_map: anonymization.map,
-        status: 'analyzing',
-      })
-      .eq('id', analysisId);
-
-    // 6. Analyser via DeepSeek (texte anonymisé uniquement)
-    console.log(`[Pipeline] Analyse pour ${analysisId}...`);
     let analysisResult;
 
     try {
-      analysisResult = await analyzeCV(anonymization.anonymizedText);
+      analysisResult = await analyzeCV(analysis.anonymized_text);
     } catch (error) {
-      console.error('[Pipeline] Analysis failed:', error);
+      console.error('[Analyze] DeepSeek error:', error);
       await updateStatus(admin, analysisId, 'error');
       return NextResponse.json(
         { error: 'Erreur lors de l\'analyse. Veuillez réessayer.' },
@@ -179,15 +110,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 7. Dé-anonymiser les résultats
-    await updateStatus(admin, analysisId, 'deanonymizing');
-
+    // 3. Dé-anonymiser les résultats
     const deanonymizedResult = deanonymizeResults(
       analysisResult,
-      anonymization.map
+      analysis.anonymization_map || {}
     );
 
-    // 8. Stocker le résultat
+    // 4. Stocker le résultat
     const { data: savedResult, error: saveError } = await (admin as any)
       .from('cv_results')
       .insert({
@@ -204,33 +133,30 @@ export async function POST(request: NextRequest) {
       .single() as { data: any; error: unknown };
 
     if (saveError) {
-      console.error('[Pipeline] Save result error:', saveError);
-      // Ne pas fail — le résultat est en mémoire, on le retourne quand même
+      console.error('[Analyze] Save result error:', saveError);
     }
 
-    // 9. Marquer comme terminé
+    // 5. Marquer comme terminé
     await updateStatus(admin, analysisId, 'done');
 
-    // 10. Incrémenter le compteur si user connecté
+    // 6. Incrémenter le compteur si user connecté
     if (analysis.user_id) {
       try {
         await (admin as any).rpc('increment_analyses_count', {
           p_user_id: analysis.user_id,
         }) as { data: any; error: unknown };
       } catch (error) {
-        // Ignore errors on increment - non-bloquant
-        console.warn('[Pipeline] Failed to increment analyses count:', error);
+        console.warn('[Analyze] Failed to increment analyses count:', error);
       }
     }
 
-    const elapsed = Date.now() - startTime;
-    console.log(`[Pipeline] Terminé pour ${analysisId} en ${elapsed}ms`);
+    console.log(`[Analyze] ✅ Done for ${analysisId}`);
 
-    // 11. Déterminer si l'user voit le rapport complet ou partiel
+    // 7. Déterminer si rapport partiel ou complet
     const supabase = await createSupabaseServerClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    let isPartial = true; // Par défaut, rapport partiel (hook gratuit)
+    let isPartial = true;
 
     if (user) {
       const { data: subscription } = await admin
@@ -239,9 +165,7 @@ export async function POST(request: NextRequest) {
         .eq('user_id', user.id)
         .single() as { data: Subscription | null; error: unknown };
 
-      isPartial = !subscription || subscription.plan === 'free'
-        ? false  // Free users voient le rapport complet pour la 1ère analyse
-        : false; // Pro/Business voient toujours le rapport complet
+      isPartial = !subscription || subscription.plan === 'free' ? false : false;
     }
 
     // Construire le rapport
@@ -260,9 +184,13 @@ export async function POST(request: NextRequest) {
       isPartial,
     };
 
-    return NextResponse.json({ report, cached: false });
+    return NextResponse.json({ 
+      status: 'done', 
+      report, 
+      cached: false 
+    });
   } catch (error) {
-    console.error('[Pipeline] Unexpected error:', error);
+    console.error('[Analyze] Unexpected error:', error);
     return NextResponse.json(
       { error: 'Erreur interne du serveur.' },
       { status: 500 }
