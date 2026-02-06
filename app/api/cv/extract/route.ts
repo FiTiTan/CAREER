@@ -77,12 +77,13 @@ export async function POST(request: NextRequest) {
 
     // 3. Extraire le texte avec unpdf (serverless-compatible)
     console.log(`[Extract] Extracting text for ${analysisId}...`);
-    const buffer = Buffer.from(await fileData.arrayBuffer());
+    const arrayBuffer = await fileData.arrayBuffer();
+    const uint8Array = new Uint8Array(arrayBuffer);
     let extractedText: string;
 
     try {
       const { extractText } = await import('unpdf');
-      const result = await extractText(buffer, { mergePages: true });
+      const result = await extractText(uint8Array, { mergePages: true });
       extractedText = result.text;
 
       if (!extractedText || extractedText.length < 50) {
