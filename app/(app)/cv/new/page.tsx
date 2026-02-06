@@ -1,23 +1,7 @@
-import dynamic from 'next/dynamic'
+'use client'
 
-// Force client-only pour éviter SSR avec pdfjs-dist (nécessite canvas natif)
-const CVUploader = dynamic(() => import('@/components/cv/CVUploader'), {
-  ssr: false,
-  loading: () => (
-    <div style={{ textAlign: 'center', padding: '3rem' }}>
-      <div style={{
-        width: '48px',
-        height: '48px',
-        margin: '0 auto',
-        border: '3px solid #E5E7EB',
-        borderTop: '3px solid #0D9488',
-        borderRadius: '50%',
-        animation: 'spin 1s linear infinite'
-      }} />
-      <style>{`@keyframes spin { to { transform: rotate(360deg); }}`}</style>
-    </div>
-  )
-})
+import { Suspense } from 'react'
+import CVUploader from '@/components/cv/CVUploader'
 
 export default function NewCVPage() {
   return (
