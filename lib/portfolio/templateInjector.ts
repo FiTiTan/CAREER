@@ -213,10 +213,19 @@ export const injectTemplateData = (
 
 /**
  * Charge un template HTML depuis le système de fichiers public
+ * Essaie d'abord free/, puis premium/
  */
 export const loadTemplateHTML = async (templateId: string): Promise<string> => {
+  // Essayer free d'abord
+  const freePath = `/templates/portfolio/free/${templateId}.html`;
+  const premiumPath = `/templates/portfolio/premium/${templateId}.html`;
+  
   try {
-    const response = await fetch(`/templates/portfolio/free/${templateId}/template.html`);
+    let response = await fetch(freePath);
+    if (!response.ok) {
+      // Essayer premium
+      response = await fetch(premiumPath);
+    }
     if (!response.ok) {
       throw new Error(`Template not found: ${templateId}`);
     }
@@ -228,15 +237,20 @@ export const loadTemplateHTML = async (templateId: string): Promise<string> => {
 };
 
 /**
- * Charge les métadonnées d'un template
+ * Charge les métadonnées d'un template depuis index.json
  */
 export const loadTemplateMeta = async (templateId: string): Promise<any> => {
   try {
-    const response = await fetch(`/templates/portfolio/free/${templateId}/meta.json`);
+    const response = await fetch('/templates/portfolio/index.json');
     if (!response.ok) {
+      throw new Error('Template registry not found');
+    }
+    const registry = await response.json();
+    const template = registry.templates.find((t: any) => t.id === templateId);
+    if (!template) {
       throw new Error(`Template meta not found: ${templateId}`);
     }
-    return await response.json();
+    return template;
   } catch (error) {
     console.error(`Error loading template meta ${templateId}:`, error);
     throw new Error(`Impossible de charger les métadonnées du template ${templateId}`);

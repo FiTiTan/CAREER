@@ -186,12 +186,20 @@ export interface TemplateMetadata {
 /**
  * Registre des templates (index.json)
  */
+export interface TemplateInfo {
+  id: string;
+  name: string;
+  description: string;
+  file: string;
+  category: 'free' | 'premium';
+  price: number;
+  tags: string[];
+  idealFor: string[];
+}
+
 export interface TemplateRegistry {
   version: string;
-  templates: {
-    free: Array<{ id: string; path: string; name: string }>;
-    premium: Array<{ id: string; path: string; name: string; price: number }>;
-  };
+  templates: TemplateInfo[];
 }
 
 /**

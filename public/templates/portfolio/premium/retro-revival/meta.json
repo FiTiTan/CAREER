@@ -1,0 +1,15 @@
+{
+  "id": "retro-revival",
+  "name": "Retro Revival",
+  "description": "Style vintage modernisé années 70-80, couleurs chaudes, grain photo",
+  "category": "premium",
+  "price": 4.99,
+  "version": "1.0.0",
+  "author": "CareerCare",
+  "tags": ["vintage", "retro", "70s", "80s", "photographe"],
+  "idealFor": ["Photographes", "Créatifs", "Artisans"],
+  "sections": {
+    "obligatoires": ["hero", "about", "services", "contact"],
+    "optionnelles": ["projects"]
+  }
+}
