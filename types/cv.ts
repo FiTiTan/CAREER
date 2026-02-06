@@ -18,7 +18,7 @@ export type AnalysisStatus =
 /** Résultat de l'extraction PDF */
 export interface PDFExtraction {
   text: string;
-  pageCount: number;
+  pageCount?: number;
   metadata?: {
     title?: string;
     author?: string;

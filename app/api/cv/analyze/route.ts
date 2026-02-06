@@ -134,7 +134,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Sauvegarder le texte brut
-    await admin
+    await (admin as any)
       .from('cv_analyses')
       .update({ raw_text: extraction.text, status: 'anonymizing' })
       .eq('id', analysisId);
@@ -155,7 +155,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Sauvegarder le texte anonymisé + la map (EU only)
-    await admin
+    await (admin as any)
       .from('cv_analyses')
       .update({
         anonymized_text: anonymization.anonymizedText,
@@ -188,7 +188,7 @@ export async function POST(request: NextRequest) {
     );
 
     // 8. Stocker le résultat
-    const { data: savedResult, error: saveError } = await admin
+    const { data: savedResult, error: saveError } = await (admin as any)
       .from('cv_results')
       .insert({
         analysis_id: analysisId,
@@ -213,12 +213,14 @@ export async function POST(request: NextRequest) {
 
     // 10. Incrémenter le compteur si user connecté
     if (analysis.user_id) {
-      await admin.rpc('increment_analyses_count', {
-        p_user_id: analysis.user_id,
-      }).catch(() => {
-        // Non-bloquant
-        console.warn('[Pipeline] Failed to increment analyses count');
-      }) as { data: any; error: unknown };
+      try {
+        await (admin as any).rpc('increment_analyses_count', {
+          p_user_id: analysis.user_id,
+        }) as { data: any; error: unknown };
+      } catch (error) {
+        // Ignore errors on increment - non-bloquant
+        console.warn('[Pipeline] Failed to increment analyses count:', error);
+      }
     }
 
     const elapsed = Date.now() - startTime;
@@ -235,7 +237,7 @@ export async function POST(request: NextRequest) {
         .from('subscriptions')
         .select('plan')
         .eq('user_id', user.id)
-        .single();
+        .single() as { data: Subscription | null; error: unknown };
 
       isPartial = !subscription || subscription.plan === 'free'
         ? false  // Free users voient le rapport complet pour la 1ère analyse
@@ -277,7 +279,7 @@ async function updateStatus(
   analysisId: string,
   status: string
 ) {
-  await admin
+  await (admin as any)
     .from('cv_analyses')
     .update({ status })
     .eq('id', analysisId);

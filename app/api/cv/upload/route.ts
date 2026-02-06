@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 6. Créer l'entrée en base
-    const { data: analysis, error: dbError } = await admin
+    const { data: analysis, error: dbError } = await (admin as any)
       .from('cv_analyses')
       .insert({
         user_id: user?.id || null,

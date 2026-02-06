@@ -149,7 +149,7 @@ export async function extractTextFromDocument(
   
   return {
     text: truncatedText,
-    pageCount: pageCount || undefined,
+    pageCount,
     metadata: {
       title: undefined,
       author: undefined,
