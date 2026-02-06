@@ -13,7 +13,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseServerClient, createSupabaseAdminClient } from '@/lib/supabase/server';
-import { isPDF } from '@/lib/utils';
+import { validateDocumentFile } from '@/lib/document-extractor';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 
@@ -25,34 +25,22 @@ export async function POST(request: NextRequest) {
 
     if (!file) {
       return NextResponse.json(
-        { error: 'Aucun fichier fourni. Envoyez un PDF dans le champ "cv".' },
+        { error: 'Aucun fichier fourni. Envoyez votre CV dans le champ "cv".' },
         { status: 400 }
       );
     }
 
     // 2. Validations
-    if (file.type !== 'application/pdf') {
+    try {
+      validateDocumentFile(file);
+    } catch (error) {
       return NextResponse.json(
-        { error: 'Seuls les fichiers PDF sont acceptés.' },
-        { status: 400 }
-      );
-    }
-
-    if (file.size > MAX_FILE_SIZE) {
-      return NextResponse.json(
-        { error: 'Le fichier ne doit pas dépasser 5 Mo.' },
+        { error: error instanceof Error ? error.message : 'Fichier invalide' },
         { status: 400 }
       );
     }
 
     const buffer = await file.arrayBuffer();
-
-    if (!isPDF(buffer)) {
-      return NextResponse.json(
-        { error: 'Le fichier ne semble pas être un PDF valide.' },
-        { status: 400 }
-      );
-    }
 
     // 3. Identifier l'utilisateur (optionnel)
     const supabase = await createSupabaseServerClient();

@@ -17,7 +17,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseAdminClient, createSupabaseServerClient } from '@/lib/supabase/server';
-import { extractTextFromPDF } from '@/lib/pdf';
+import { extractTextFromDocument } from '@/lib/document-extractor';
 import { anonymizeCV, deanonymizeResults } from '@/lib/ai/anonymizer';
 import { analyzeCV } from '@/lib/ai/cv-analyzer';
 import type { CVReport } from '@/types/cv';
@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
     let extraction;
 
     try {
-      extraction = await extractTextFromPDF(buffer);
+      extraction = await extractTextFromDocument(buffer, analysis.file_name || undefined);
     } catch (error) {
       await updateStatus(admin, analysisId, 'error');
       return NextResponse.json(
