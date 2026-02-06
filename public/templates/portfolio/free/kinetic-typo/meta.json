@@ -1,0 +1,15 @@
+{
+  "id": "kinetic-typo",
+  "name": "Kinetic Typography",
+  "description": "Animations texte au scroll, typographie expressive et dynamique",
+  "category": "free",
+  "price": 0,
+  "version": "1.0.0",
+  "author": "CareerCare",
+  "tags": ["créatif", "animation", "design", "artistique"],
+  "idealFor": ["Créatifs", "Artistes", "Designers"],
+  "sections": {
+    "obligatoires": ["hero", "about", "services", "contact"],
+    "optionnelles": ["projects", "testimonials"]
+  }
+}

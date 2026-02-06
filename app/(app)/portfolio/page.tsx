@@ -1,258 +1,130 @@
-'use client'
+// ============================================================
+// Page : /portfolio
+// Liste des portfolios de l'utilisateur
+// ============================================================
 
-import { useEffect, useState } from 'react'
-import Link from 'next/link'
-import type { Portfolio } from '@/types/portfolio'
-import { SECTORS } from '@/types/portfolio'
+import { Suspense } from 'react';
+import Link from 'next/link';
+import { createClient } from '@/lib/supabase/server';
+import { redirect } from 'next/navigation';
 
-export default function PortfolioDashboard() {
-  const [portfolios, setPortfolios] = useState<Portfolio[]>([])
-  const [loading, setLoading] = useState(true)
+export default async function PortfolioPage() {
+  const supabase = await createClient();
+  
+  // Vérifier auth
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  useEffect(() => {
-    const fetchPortfolios = async () => {
-      try {
-        const res = await fetch('/api/portfolio')
-        if (res.ok) {
-          const data = await res.json()
-          setPortfolios(data.portfolios || [])
-        }
-      } catch (err) {
-        console.error('Error fetching portfolios:', err)
-      }
-      setLoading(false)
-    }
-    fetchPortfolios()
-  }, [])
-
-  const getSectorInfo = (sectorId: string | null) => {
-    return SECTORS.find(s => s.id === sectorId) || SECTORS[SECTORS.length - 1]
+  if (!user) {
+    redirect('/auth/login');
   }
 
-  if (loading) {
-    return (
-      <div style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#FAFAFA'
-      }}>
-        <div style={{
-          width: '48px',
-          height: '48px',
-          border: '4px solid #E5E7EB',
-          borderTop: '4px solid #0D9488',
-          borderRadius: '50%',
-          animation: 'spin 1s linear infinite'
-        }} />
-        <style jsx>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-      </div>
-    )
-  }
+  // Récupérer les portfolios
+  const { data: portfolios, error } = await supabase
+    .from('portfolios')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false });
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      padding: '2rem',
-      backgroundColor: '#FAFAFA'
-    }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+    <div className="min-h-screen bg-bg-primary p-8">
+      <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '2rem'
-        }}>
+        <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 style={{ fontSize: '2rem', fontWeight: 600, marginBottom: '0.5rem' }}>
-              Mon Portfolio Maître
+            <h1 className="text-3xl font-semibold text-text-primary mb-2">
+              Mes Portfolios
             </h1>
-            <p style={{ color: '#6B7280' }}>
-              Centralisez vos réalisations et générez des portfolios ciblés
+            <p className="text-text-secondary">
+              Créez et gérez vos sites portfolio professionnels
             </p>
           </div>
           <Link
-            href="/portfolio/new"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              padding: '0.75rem 1.5rem',
-              backgroundColor: '#0D9488',
-              color: '#FFFFFF',
-              borderRadius: '8px',
-              fontWeight: 500,
-              textDecoration: 'none',
-              transition: 'background 0.2s'
-            }}
+            href="/portfolio/wizard"
+            className="px-6 py-3 bg-[var(--anthracite)] text-white rounded-full font-medium hover:bg-[var(--anthracite-hover)] transition-colors"
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M12 5v14M5 12h14" />
-            </svg>
             Créer un portfolio
           </Link>
         </div>
 
-        {/* Empty State */}
-        {portfolios.length === 0 && (
-          <div style={{
-            backgroundColor: '#FFFFFF',
-            borderRadius: '16px',
-            padding: '4rem 2rem',
-            textAlign: 'center',
-            border: '2px dashed #E5E7EB'
-          }}>
-            <div style={{
-              width: '80px',
-              height: '80px',
-              margin: '0 auto 1.5rem',
-              backgroundColor: '#F0FDFA',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#0D9488" strokeWidth="1.5">
-                <path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-              </svg>
-            </div>
-            <h2 style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '0.5rem' }}>
-              Créez votre premier portfolio
-            </h2>
-            <p style={{ color: '#6B7280', marginBottom: '1.5rem', maxWidth: '400px', margin: '0 auto 1.5rem' }}>
-              Rassemblez vos projets, compétences et certifications en un seul endroit.
-              Générez ensuite des portfolios ciblés pour chaque candidature.
-            </p>
-            <Link
-              href="/portfolio/new"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                padding: '0.75rem 1.5rem',
-                backgroundColor: '#0D9488',
-                color: '#FFFFFF',
-                borderRadius: '8px',
-                fontWeight: 500,
-                textDecoration: 'none'
-              }}
-            >
-              Commencer
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M5 12h14M12 5l7 7-7 7" />
-              </svg>
-            </Link>
-          </div>
-        )}
-
-        {/* Portfolio Grid */}
-        {portfolios.length > 0 && (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
-            gap: '1.5rem'
-          }}>
-            {portfolios.map((portfolio) => {
-              const sector = getSectorInfo(portfolio.sector)
-              return (
-                <Link
-                  key={portfolio.id}
-                  href={`/portfolio/${portfolio.id}`}
-                  style={{
-                    backgroundColor: '#FFFFFF',
-                    borderRadius: '12px',
-                    padding: '1.5rem',
-                    border: '1px solid #E5E7EB',
-                    textDecoration: 'none',
-                    color: 'inherit',
-                    transition: 'all 0.2s',
-                    display: 'block'
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
-                    <div style={{
-                      width: '48px',
-                      height: '48px',
-                      backgroundColor: `${sector.color}15`,
-                      borderRadius: '12px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '1.5rem',
-                      flexShrink: 0
-                    }}>
-                      {sector.icon}
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-                        <h3 style={{ fontSize: '1.125rem', fontWeight: 600, margin: 0 }}>
-                          {portfolio.title}
-                        </h3>
-                        <span style={{
-                          fontSize: '0.75rem',
-                          padding: '0.125rem 0.5rem',
-                          borderRadius: '999px',
-                          backgroundColor: portfolio.status === 'published' ? '#DCFCE7' : '#FEF3C7',
-                          color: portfolio.status === 'published' ? '#166534' : '#92400E'
-                        }}>
-                          {portfolio.status === 'published' ? 'Publié' : 'Brouillon'}
-                        </span>
-                      </div>
-                      {portfolio.tagline && (
-                        <p style={{
-                          fontSize: '0.875rem',
-                          color: '#6B7280',
-                          margin: 0,
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap'
-                        }}>
-                          {portfolio.tagline}
-                        </p>
-                      )}
-                      <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.5rem',
-                        marginTop: '0.75rem',
-                        fontSize: '0.75rem',
-                        color: '#9CA3AF'
-                      }}>
-                        <span style={{ color: sector.color }}>{sector.label}</span>
-                        <span>•</span>
-                        <span>
-                          Modifié {new Date(portfolio.updated_at).toLocaleDateString('fr-FR')}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              )
-            })}
-          </div>
-        )}
-
-        {/* Quick Stats */}
-        {portfolios.length > 0 && (
-          <div style={{
-            marginTop: '3rem',
-            padding: '1.5rem',
-            backgroundColor: '#FFFFFF',
-            borderRadius: '12px',
-            border: '1px solid #E5E7EB'
-          }}>
-            <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem' }}>
-              Conseil
-            </h3>
-            <p style={{ color: '#6B7280', fontSize: '0.875rem', margin: 0 }}>
-              💡 <strong>Astuce :</strong> Enrichissez votre portfolio maître avec vos meilleures réalisations.
-              Vous pourrez ensuite générer des portfolios ciblés adaptés à chaque offre d'emploi.
-            </p>
+        {/* Liste des portfolios */}
+        {!portfolios || portfolios.length === 0 ? (
+          <EmptyState />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {portfolios.map((portfolio: any) => (
+              <PortfolioCard key={portfolio.id} portfolio={portfolio} />
+            ))}
           </div>
         )}
       </div>
     </div>
-  )
+  );
+}
+
+function EmptyState() {
+  return (
+    <div className="bg-bg-secondary rounded-xl p-12 text-center border border-[var(--border-light)]">
+      <div className="w-16 h-16 bg-bg-tertiary rounded-full mx-auto mb-4 flex items-center justify-center">
+        <svg
+          className="w-8 h-8 text-text-tertiary"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.5}
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+          />
+        </svg>
+      </div>
+      <h3 className="text-xl font-semibold text-text-primary mb-2">
+        Aucun portfolio pour le moment
+      </h3>
+      <p className="text-text-secondary mb-6">
+        Créez votre premier portfolio en 8 étapes guidées
+      </p>
+      <Link
+        href="/portfolio/wizard"
+        className="inline-block px-6 py-3 bg-[var(--anthracite)] text-white rounded-full font-medium hover:bg-[var(--anthracite-hover)] transition-colors"
+      >
+        Créer mon premier portfolio
+      </Link>
+    </div>
+  );
+}
+
+function PortfolioCard({ portfolio }: { portfolio: any }) {
+  return (
+    <Link
+      href={`/portfolio/${portfolio.id}/edit`}
+      className="group bg-bg-secondary rounded-xl p-6 border border-[var(--border-light)] hover:border-[var(--accent-teal)] transition-all hover:shadow-lg"
+    >
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex-1">
+          <h3 className="text-lg font-semibold text-text-primary mb-1 group-hover:text-[var(--accent-teal)] transition-colors">
+            {portfolio.title}
+          </h3>
+          <p className="text-sm text-text-tertiary">
+            Modifié {new Date(portfolio.updated_at).toLocaleDateString('fr-FR')}
+          </p>
+        </div>
+        {portfolio.published && (
+          <span className="px-3 py-1 bg-[var(--success-bg)] text-[var(--success)] text-xs font-medium rounded-full">
+            Publié
+          </span>
+        )}
+      </div>
+      
+      <div className="flex items-center gap-2 text-sm text-text-secondary">
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+        </svg>
+        <span className="capitalize">{portfolio.template}</span>
+      </div>
+    </Link>
+  );
 }

@@ -1,112 +1,126 @@
 // ============================================================
-// CareerCare — API Route : Portfolio
-// GET /api/portfolio - Liste les portfolios de l'utilisateur
-// POST /api/portfolio - Crée un nouveau portfolio
+// API Route : /api/portfolio
+// GET (list) / POST (create)
 // ============================================================
 
-import { NextRequest, NextResponse } from 'next/server'
-import { createSupabaseAdminClient, createSupabaseServerClient } from '@/lib/supabase/server'
+import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 
-// GET - Liste des portfolios
+/**
+ * GET /api/portfolio
+ * Liste tous les portfolios de l'utilisateur connecté
+ */
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createSupabaseServerClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const supabase = await createClient();
 
-    const admin = createSupabaseAdminClient()
+    // Vérifier l'authentification
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
 
-    // Si connecté, récupérer les portfolios de l'utilisateur
-    if (user) {
-      const { data: portfolios, error } = await admin
-        .from('portfolios')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('updated_at', { ascending: false })
-
-      if (error) {
-        console.error('[Portfolio GET] Error:', error)
-        return NextResponse.json({ portfolios: [] })
-      }
-
-      return NextResponse.json({ portfolios })
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Non connecté - retourner liste vide
-    return NextResponse.json({ portfolios: [] })
+    // Récupérer les portfolios
+    const { data: portfolios, error } = await supabase
+      .from('portfolios')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('[Portfolio API] Error fetching portfolios:', error);
+      return NextResponse.json(
+        { error: 'Failed to fetch portfolios' },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ portfolios });
   } catch (error) {
-    console.error('[Portfolio GET] Error:', error)
-    return NextResponse.json({ portfolios: [] })
+    console.error('[Portfolio API] GET error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }
 
-// POST - Créer un portfolio
+/**
+ * POST /api/portfolio
+ * Crée un nouveau portfolio
+ */
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { title, tagline, sector, cvAnalysisId } = body
+    const supabase = await createClient();
 
-    if (!title) {
-      return NextResponse.json(
-        { error: 'Le titre est requis' },
-        { status: 400 }
-      )
+    // Vérifier l'authentification
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const supabase = await createSupabaseServerClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const body = await request.json();
+    const { slug, title, data, template, published = false } = body;
 
-    const admin = createSupabaseAdminClient()
+    // Validation
+    if (!slug || !title || !data || !template) {
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
+
+    // Vérifier que le slug est unique pour cet utilisateur
+    const { data: existing } = await supabase
+      .from('portfolios')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('slug', slug)
+      .single();
+
+    if (existing) {
+      return NextResponse.json(
+        { error: 'Slug already exists' },
+        { status: 409 }
+      );
+    }
 
     // Créer le portfolio
-    const { data: portfolio, error } = await (admin as any)
+    const { data: portfolio, error } = await (supabase as any)
       .from('portfolios')
       .insert({
-        user_id: user?.id || null,
+        user_id: user.id,
+        slug,
         title,
-        tagline: tagline || null,
-        sector: sector || null,
-        status: 'draft',
-        settings: {},
+        data,
+        template,
+        published,
       })
-      .select('*')
-      .single()
+      .select()
+      .single();
 
     if (error) {
-      console.error('[Portfolio POST] Error:', error)
+      console.error('[Portfolio API] Error creating portfolio:', error);
       return NextResponse.json(
-        { error: 'Erreur lors de la création du portfolio' },
+        { error: 'Failed to create portfolio' },
         { status: 500 }
-      )
+      );
     }
 
-    console.log(`[Portfolio] Created: ${portfolio.id}`)
-
-    // Si import depuis CV demandé, importer les compétences
-    if (cvAnalysisId) {
-      try {
-        // Récupérer les résultats de l'analyse
-        const { data: results } = await admin
-          .from('cv_results')
-          .select('*')
-          .eq('analysis_id', cvAnalysisId)
-          .single()
-
-        if (results) {
-          // Importer les compétences détectées
-          // TODO: Parser les compétences depuis results.diagnostic
-          console.log(`[Portfolio] Importing from CV analysis: ${cvAnalysisId}`)
-        }
-      } catch (importError) {
-        console.warn('[Portfolio] CV import failed:', importError)
-      }
-    }
-
-    return NextResponse.json({ portfolio })
+    return NextResponse.json({ portfolio }, { status: 201 });
   } catch (error) {
-    console.error('[Portfolio POST] Error:', error)
+    console.error('[Portfolio API] POST error:', error);
     return NextResponse.json(
-      { error: 'Erreur interne du serveur' },
+      { error: 'Internal server error' },
       { status: 500 }
-    )
+    );
   }
 }

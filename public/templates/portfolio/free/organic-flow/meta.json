@@ -1,0 +1,15 @@
+{
+  "id": "organic-flow",
+  "name": "Organic Flow",
+  "description": "Formes organiques, courbes douces, palette nature et apaisante",
+  "category": "free",
+  "price": 0,
+  "version": "1.0.0",
+  "author": "CareerCare",
+  "tags": ["bio", "nature", "bien-être", "organique"],
+  "idealFor": ["Artisans", "Thérapeutes", "Bio"],
+  "sections": {
+    "obligatoires": ["hero", "about", "services", "contact"],
+    "optionnelles": ["projects", "practical_info"]
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "version": "1.0.0",
+  "templates": {
+    "free": [
+      {
+        "id": "bento-grid",
+        "path": "free/bento-grid",
+        "name": "Bento Grid Layout"
+      },
+      {
+        "id": "glassmorphism",
+        "path": "free/glassmorphism",
+        "name": "Glassmorphism"
+      },
+      {
+        "id": "kinetic-typo",
+        "path": "free/kinetic-typo",
+        "name": "Kinetic Typography"
+      },
+      {
+        "id": "minimal-apple",
+        "path": "free/minimal-apple",
+        "name": "Minimal Apple"
+      },
+      {
+        "id": "organic-flow",
+        "path": "free/organic-flow",
+        "name": "Organic Flow"
+      }
+    ],
+    "premium": []
+  }
+}

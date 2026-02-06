@@ -1,145 +1,157 @@
 // ============================================================
-// CareerCare — API Route : Portfolio Detail
-// GET /api/portfolio/[id] - Récupère un portfolio avec ses relations
-// PATCH /api/portfolio/[id] - Met à jour un portfolio
-// DELETE /api/portfolio/[id] - Supprime un portfolio
+// API Route : /api/portfolio/[id]
+// GET / PUT / DELETE
 // ============================================================
 
-import { NextRequest, NextResponse } from 'next/server'
-import { createSupabaseAdminClient, createSupabaseServerClient } from '@/lib/supabase/server'
+import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 
-// GET - Récupérer un portfolio complet
+/**
+ * GET /api/portfolio/[id]
+ * Récupère un portfolio par ID
+ */
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params
-
   try {
-    const admin = createSupabaseAdminClient()
+    const supabase = await createClient();
+    const { id } = await params;
+
+    // Vérifier l'authentification
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
     // Récupérer le portfolio
-    const { data: portfolio, error: portfolioError } = await (admin as any)
+    const { data: portfolio, error } = await supabase
       .from('portfolios')
       .select('*')
       .eq('id', id)
-      .single()
+      .eq('user_id', user.id)
+      .single();
 
-    if (portfolioError || !portfolio) {
+    if (error || !portfolio) {
       return NextResponse.json(
-        { error: 'Portfolio non trouvé' },
+        { error: 'Portfolio not found' },
         { status: 404 }
-      )
+      );
     }
 
-    // Récupérer les relations
-    const [
-      { data: projects },
-      { data: skills },
-      { data: certifications },
-      { data: testimonials },
-      { data: education }
-    ] = await Promise.all([
-      (admin as any).from('portfolio_projects').select('*').eq('portfolio_id', id).order('sort_order'),
-      (admin as any).from('portfolio_skills').select('*').eq('portfolio_id', id).order('sort_order'),
-      (admin as any).from('portfolio_certifications').select('*').eq('portfolio_id', id).order('sort_order'),
-      (admin as any).from('portfolio_testimonials').select('*').eq('portfolio_id', id).order('sort_order'),
-      (admin as any).from('portfolio_education').select('*').eq('portfolio_id', id).order('sort_order'),
-    ])
-
-    return NextResponse.json({
-      portfolio: {
-        ...(portfolio as Record<string, unknown>),
-        projects: projects || [],
-        skills: skills || [],
-        certifications: certifications || [],
-        testimonials: testimonials || [],
-        education: education || [],
-      }
-    })
+    return NextResponse.json({ portfolio });
   } catch (error) {
-    console.error('[Portfolio GET] Error:', error)
+    console.error('[Portfolio API] GET [id] error:', error);
     return NextResponse.json(
-      { error: 'Erreur interne du serveur' },
+      { error: 'Internal server error' },
       { status: 500 }
-    )
+    );
   }
 }
 
-// PATCH - Mettre à jour un portfolio
-export async function PATCH(
+/**
+ * PUT /api/portfolio/[id]
+ * Met à jour un portfolio
+ */
+export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params
-
   try {
-    const body = await request.json()
-    const { title, tagline, sector, status, settings } = body
+    const supabase = await createClient();
+    const { id } = await params;
 
-    const admin = createSupabaseAdminClient()
+    // Vérifier l'authentification
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
 
-    const updates: Record<string, unknown> = {}
-    if (title !== undefined) updates.title = title
-    if (tagline !== undefined) updates.tagline = tagline
-    if (sector !== undefined) updates.sector = sector
-    if (status !== undefined) updates.status = status
-    if (settings !== undefined) updates.settings = settings
-
-    const { data: portfolio, error } = await (admin as any)
-      .from('portfolios')
-      .update(updates)
-      .eq('id', id)
-      .select('*')
-      .single()
-
-    if (error) {
-      console.error('[Portfolio PATCH] Error:', error)
-      return NextResponse.json(
-        { error: 'Erreur lors de la mise à jour' },
-        { status: 500 }
-      )
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    return NextResponse.json({ portfolio })
+    const body = await request.json();
+    const { title, data, template, published } = body;
+
+    // Mettre à jour le portfolio
+    const { data: portfolio, error } = await (supabase as any)
+      .from('portfolios')
+      .update({
+        title,
+        data,
+        template,
+        published,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', id)
+      .eq('user_id', user.id)
+      .select()
+      .single();
+
+    if (error || !portfolio) {
+      return NextResponse.json(
+        { error: 'Failed to update portfolio' },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ portfolio });
   } catch (error) {
-    console.error('[Portfolio PATCH] Error:', error)
+    console.error('[Portfolio API] PUT error:', error);
     return NextResponse.json(
-      { error: 'Erreur interne du serveur' },
+      { error: 'Internal server error' },
       { status: 500 }
-    )
+    );
   }
 }
 
-// DELETE - Supprimer un portfolio
+/**
+ * DELETE /api/portfolio/[id]
+ * Supprime un portfolio
+ */
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params
-
   try {
-    const admin = createSupabaseAdminClient()
+    const supabase = await createClient();
+    const { id } = await params;
 
-    const { error } = await admin
+    // Vérifier l'authentification
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Supprimer le portfolio
+    const { error } = await supabase
       .from('portfolios')
       .delete()
       .eq('id', id)
+      .eq('user_id', user.id);
 
     if (error) {
-      console.error('[Portfolio DELETE] Error:', error)
       return NextResponse.json(
-        { error: 'Erreur lors de la suppression' },
+        { error: 'Failed to delete portfolio' },
         { status: 500 }
-      )
+      );
     }
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('[Portfolio DELETE] Error:', error)
+    console.error('[Portfolio API] DELETE error:', error);
     return NextResponse.json(
-      { error: 'Erreur interne du serveur' },
+      { error: 'Internal server error' },
       { status: 500 }
-    )
+    );
   }
 }
