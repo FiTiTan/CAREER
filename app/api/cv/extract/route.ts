@@ -75,14 +75,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 3. Extraire le texte
+    // 3. Extraire le texte avec unpdf (serverless-compatible)
     console.log(`[Extract] Extracting text for ${analysisId}...`);
     const buffer = Buffer.from(await fileData.arrayBuffer());
-    let extraction;
+    let extractedText: string;
 
     try {
-      extraction = await extractTextFromDocument(buffer, analysis.file_name || undefined);
+      const { extractText } = await import('unpdf');
+      const result = await extractText(buffer, { mergePages: true });
+      extractedText = result.text;
+
+      if (!extractedText || extractedText.length < 50) {
+        throw new Error('Le PDF semble vide ou illisible.');
+      }
     } catch (error) {
+      console.error('[Extract] Unpdf error:', error);
       await updateStatus(admin, analysisId, 'error');
       return NextResponse.json(
         {
@@ -94,20 +101,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 4. Sauvegarder le texte brut
+    // 4. Sauvegarder le texte brut et passer à l'anonymisation
     await (admin as any)
       .from('cv_analyses')
       .update({ 
-        raw_text: extraction.text, 
-        status: 'extracted' 
+        raw_text: extractedText, 
+        status: 'anonymizing'
       })
       .eq('id', analysisId);
 
     console.log(`[Extract] ✅ Done for ${analysisId}`);
 
     return NextResponse.json({
-      status: 'extracted',
-      textLength: extraction.text.length
+      status: 'anonymizing',
+      textLength: extractedText.length
     });
   } catch (error) {
     console.error('[Extract] Unexpected error:', error);

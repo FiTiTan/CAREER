@@ -71,9 +71,9 @@ export default function CVAnalysisPage() {
 
     const runPipeline = async () => {
       try {
-        // Étape 1 : Anonymisation (~5-8s) - extraction déjà faite côté client
-        if (step === 'anonymizing') {
-          const res1 = await fetch('/api/cv/anonymize', {
+        // Étape 1 : Extraction PDF côté serveur (~2-3s)
+        if (step === 'pending') {
+          const res1 = await fetch('/api/cv/extract', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ analysisId: id }),
@@ -81,13 +81,10 @@ export default function CVAnalysisPage() {
           
           if (!res1.ok) {
             const err = await res1.json()
-            throw new Error(err.error || 'Erreur lors de l\'anonymisation')
+            throw new Error(err.error || 'Erreur lors de l\'extraction')
           }
           
-          // Le statut sera mis à jour par l'API
-          await new Promise(resolve => setTimeout(resolve, 1000))
-          
-          // Recharger l'analyse pour voir le nouveau statut
+          await new Promise(resolve => setTimeout(resolve, 500))
           const { data: updatedAnalysis } = await supabase
             .from('cv_analyses')
             .select('*')
@@ -99,9 +96,9 @@ export default function CVAnalysisPage() {
           }
         }
 
-        // Étape 2 : Analyse IA (~5-8s)
-        if (step === 'analyzing') {
-          const res2 = await fetch('/api/cv/analyze', {
+        // Étape 2 : Anonymisation (~5-8s)
+        if (step === 'anonymizing') {
+          const res2 = await fetch('/api/cv/anonymize', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ analysisId: id }),
@@ -109,6 +106,31 @@ export default function CVAnalysisPage() {
           
           if (!res2.ok) {
             const err = await res2.json()
+            throw new Error(err.error || 'Erreur lors de l\'anonymisation')
+          }
+          
+          await new Promise(resolve => setTimeout(resolve, 500))
+          const { data: updatedAnalysis } = await supabase
+            .from('cv_analyses')
+            .select('*')
+            .eq('id', id)
+            .single() as { data: CVAnalysis | null }
+          
+          if (updatedAnalysis) {
+            setStep(updatedAnalysis.status as PipelineStep)
+          }
+        }
+
+        // Étape 3 : Analyse IA (~10-15s)
+        if (step === 'analyzing') {
+          const res3 = await fetch('/api/cv/analyze', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ analysisId: id }),
+          })
+          
+          if (!res3.ok) {
+            const err = await res3.json()
             throw new Error(err.error || 'Erreur lors de l\'analyse')
           }
           
@@ -250,9 +272,9 @@ export default function CVAnalysisPage() {
                     fontWeight: 600, 
                     color: step === 'error' ? '#991B1B' : '#854D0E' 
                   }}>
-                    {step === 'pending' && 'Préparation...'}
-                    {step === 'extracting' && 'Extraction du texte...'}
-                    {step === 'anonymizing' && 'Anonymisation RGPD en cours...'}
+                    {step === 'pending' && 'Extraction du PDF...'}
+                    {step === 'extracting' && 'Extraction en cours...'}
+                    {step === 'anonymizing' && 'Anonymisation RGPD...'}
                     {step === 'analyzing' && 'Analyse IA (DeepSeek)...'}
                     {step === 'deanonymizing' && 'Finalisation...'}
                     {step === 'error' && `❌ ${error || 'Erreur lors de l\'analyse'}`}
