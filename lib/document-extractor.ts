@@ -55,7 +55,7 @@ function detectMimeType(buffer: Buffer, filename?: string): string {
  * Extrait le texte d'un PDF
  */
 async function extractFromPDF(buffer: Buffer): Promise<string> {
-  const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs');
+  const pdfjsLib = await import('pdfjs-dist');
   
   // Charger le document PDF
   const loadingTask = pdfjsLib.getDocument({
