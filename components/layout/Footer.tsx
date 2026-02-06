@@ -33,7 +33,7 @@ export default function Footer() {
             <h3 className="font-medium mb-4">Entreprise</h3>
             <ul className="space-y-2">
               <li><Link href="/about" className="text-sm text-text-secondary hover:text-text-primary transition-calm">À propos</Link></li>
-              <li><Link href="/blog" className="text-sm text-text-secondary hover:text-text-primary transition-calm">Blog</Link></li>
+              {/* Blog - Coming soon */}
               <li><Link href="/contact" className="text-sm text-text-secondary hover:text-text-primary transition-calm">Contact</Link></li>
             </ul>
           </div>

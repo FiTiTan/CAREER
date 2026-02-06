@@ -26,7 +26,7 @@ export default function CVUploader() {
 
     try {
       const formData = new FormData()
-      formData.append('file', file)
+      formData.append('cv', file)
 
       const response = await fetch('/api/cv/upload', {
         method: 'POST',
@@ -37,10 +37,10 @@ export default function CVUploader() {
         throw new Error('Échec de l\'upload')
       }
 
-      const { analysisId } = await response.json()
+      const { id } = await response.json()
       
       // Redirect to analysis page
-      router.push(`/cv/${analysisId}`)
+      router.push(`/cv/${id}`)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Une erreur est survenue')
       setUploading(false)
