@@ -53,14 +53,11 @@ function detectMimeType(buffer: Buffer, filename?: string): string {
 
 /**
  * Extrait le texte d'un PDF
+ * NOTE: L'extraction PDF se fait maintenant côté client (CVUploader.tsx)
+ * Cette fonction n'est plus utilisée.
  */
 async function extractFromPDF(buffer: Buffer): Promise<string> {
-  const { extractText } = await import('unpdf');
-  
-  // Extraire le texte avec unpdf (compatible serverless, pure JS)
-  const { text } = await extractText(buffer, { mergePages: true });
-  
-  return text;
+  throw new Error('L\'extraction PDF doit se faire côté client. Utilisez CVUploader.tsx');
 }
 
 /**
@@ -113,9 +110,8 @@ export async function extractTextFromDocument(
   // Extraction selon le type
   switch (mimeType) {
     case 'application/pdf':
-      text = await extractFromPDF(buffer);
-      pageCount = undefined;
-      break;
+      // L'extraction PDF se fait côté client maintenant (CVUploader.tsx)
+      throw new Error('L\'extraction PDF doit se faire côté client via CVUploader');
       
     case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
       text = await extractFromDOCX(buffer);
