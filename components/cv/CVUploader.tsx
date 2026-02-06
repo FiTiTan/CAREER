@@ -19,10 +19,13 @@ export default function CVUploader() {
   useEffect(() => {
     if (typeof window === 'undefined' || pdfjsLoaded) return
 
+    let timeoutId: NodeJS.Timeout
+
     const script = document.createElement('script')
     script.src = PDFJS_CDN
     script.async = true
     script.onload = () => {
+      clearTimeout(timeoutId)
       // @ts-ignore
       if (window.pdfjsLib) {
         // @ts-ignore
@@ -31,12 +34,26 @@ export default function CVUploader() {
       }
     }
     script.onerror = () => {
+      clearTimeout(timeoutId)
       setError('Erreur de chargement du module PDF. Veuillez recharger la page.')
     }
+
+    // Timeout de 15 secondes
+    timeoutId = setTimeout(() => {
+      setError('Le chargement du module PDF prend trop de temps. Vérifiez votre connexion et rechargez la page.')
+    }, 15000)
+
     document.head.appendChild(script)
 
     return () => {
-      document.head.removeChild(script)
+      clearTimeout(timeoutId)
+      try {
+        if (script.parentNode) {
+          document.head.removeChild(script)
+        }
+      } catch (e) {
+        // Ignore cleanup errors
+      }
     }
   }, [])
 
