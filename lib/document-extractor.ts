@@ -114,8 +114,7 @@ export async function extractTextFromDocument(
   switch (mimeType) {
     case 'application/pdf':
       text = await extractFromPDF(buffer);
-      // pdf-parse retourne le nombre de pages, on pourrait l'extraire ici
-      pageCount = undefined; // TODO: extraire du résultat pdf-parse
+      pageCount = undefined;
       break;
       
     case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':

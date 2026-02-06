@@ -5,10 +5,11 @@
 //
 // Étape 1/3 du pipeline :
 // 1. Télécharge le PDF depuis Supabase Storage
-// 2. Extrait le texte brut (pdf-parse)
+// 2. Extrait le texte brut (unpdf - serverless compatible)
 // 3. Sauvegarde raw_text en base
 // 4. Met le statut à 'extracted'
 //
+// Note: Depuis le fix client-side, cette route n'est normalement plus utilisée
 // Temps estimé : ~2s
 //
 // ============================================================================
