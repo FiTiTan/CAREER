@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
@@ -21,7 +21,7 @@ type CVResults = {
   diagnostic: Record<string, string>
   forces: string[]
   faiblesses: string[]
-  recommandations: string[]
+  recommandations: Array<string | { titre: string; description: string; impact?: string; priorite?: string }>
   [key: string]: unknown
 }
 
@@ -38,26 +38,27 @@ export default function CVAnalysisPage() {
 
   useEffect(() => {
     const fetchAnalysis = async () => {
-      const { data: analysisData } = await supabase
-        .from('cv_analyses')
-        .select('*')
-        .eq('id', id)
-        .single() as { data: CVAnalysis | null }
-
-      if (analysisData) {
-        setAnalysis(analysisData)
-        setStep(analysisData.status as PipelineStep)
-        
-        // Si déjà terminé, charger les résultats
-        if (analysisData.status === 'done') {
-          const { data: resultsData } = await supabase
-            .from('cv_results')
-            .select('*')
-            .eq('analysis_id', id)
-            .single() as { data: CVResults | null }
-          
-          if (resultsData) setResults(resultsData)
+      try {
+        // Utiliser l'API route pour bypass RLS
+        const res = await fetch(`/api/cv/${id}`)
+        if (!res.ok) {
+          console.error('Failed to load analysis')
+          setLoading(false)
+          return
         }
+        
+        const { analysis: analysisData, results: resultsData } = await res.json()
+        
+        if (analysisData) {
+          setAnalysis(analysisData)
+          setStep(analysisData.status as PipelineStep)
+          
+          if (resultsData) {
+            setResults(resultsData)
+          }
+        }
+      } catch (err) {
+        console.error('Error loading analysis:', err)
       }
       setLoading(false)
     }
@@ -65,94 +66,87 @@ export default function CVAnalysisPage() {
     fetchAnalysis()
   }, [id])
 
-  // Orchestrer le pipeline une fois l'analyse chargée
+  // Ref pour éviter les doubles exécutions du pipeline
+  const pipelineStarted = useRef(false)
+
+  // 1. POLLING : Met à jour l'UI toutes les 2 secondes
   useEffect(() => {
-    if (!analysis || loading || step === 'done' || step === 'error') return
+    if (!analysis || loading) return
+    if (step === 'done' || step === 'error') return
 
-    // Flag pour éviter les doubles exécutions
-    let cancelled = false
-
-    const runPipeline = async () => {
-      // Variable locale qui avance SANS attendre le re-render React
-      let currentStep = step
-
+    const pollStatus = async () => {
       try {
-        // Étape 1 : Extraction PDF côté serveur (~2-3s)
-        if (currentStep === 'pending') {
-          setStep('extracting')
+        const res = await fetch(`/api/cv/${id}`)
+        if (!res.ok) return
+        
+        const { analysis: data, results: resultsData } = await res.json()
+        if (data && data.status !== step) {
+          console.log(`[Poll] Status changed: ${step} → ${data.status}`)
+          setStep(data.status as PipelineStep)
           
-          const res1 = await fetch('/api/cv/extract', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ analysisId: id }),
-          })
-          
-          if (!res1.ok) {
-            const err = await res1.json()
-            throw new Error(err.error || 'Erreur lors de l\'extraction')
+          if (data.status === 'done' && resultsData) {
+            setResults(resultsData)
           }
-          
-          if (cancelled) return
-          currentStep = 'anonymizing'
-          setStep('anonymizing')
-        }
-
-        // Étape 2 : Anonymisation (~5-8s)
-        if (currentStep === 'anonymizing') {
-          const res2 = await fetch('/api/cv/anonymize', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ analysisId: id }),
-          })
-          
-          if (!res2.ok) {
-            const err = await res2.json()
-            throw new Error(err.error || 'Erreur lors de l\'anonymisation')
-          }
-          
-          if (cancelled) return
-          currentStep = 'analyzing'
-          setStep('analyzing')
-        }
-
-        // Étape 3 : Analyse IA (~10-15s)
-        if (currentStep === 'analyzing') {
-          const res3 = await fetch('/api/cv/analyze', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ analysisId: id }),
-          })
-          
-          if (!res3.ok) {
-            const err = await res3.json()
-            throw new Error(err.error || 'Erreur lors de l\'analyse')
-          }
-          
-          if (cancelled) return
-          setStep('done')
-          
-          // Recharger les résultats depuis la base
-          const { data: resultsData } = await supabase
-            .from('cv_results')
-            .select('*')
-            .eq('analysis_id', id)
-            .single() as { data: CVResults | null }
-          
-          if (resultsData) setResults(resultsData)
         }
       } catch (err) {
-        if (cancelled) return
-        console.error('Pipeline error:', err)
-        setError(err instanceof Error ? err.message : 'Une erreur est survenue')
+        console.error('[Poll] Error:', err)
+      }
+    }
+
+    // Poll immédiatement puis toutes les 2 secondes
+    const interval = setInterval(pollStatus, 2000)
+    
+    return () => clearInterval(interval)
+  }, [analysis, loading, step, id])
+
+  // 2. PIPELINE : Lance les étapes en background (fire & forget)
+  useEffect(() => {
+    if (!analysis || loading) return
+    if (step !== 'pending') return  // Ne lancer que si pending
+    if (pipelineStarted.current) return
+    
+    pipelineStarted.current = true
+    console.log('[Pipeline] Starting...')
+
+    const runPipeline = async () => {
+      try {
+        // Étape 1 : Extraction
+        console.log('[Pipeline] Step 1: Extract')
+        const res1 = await fetch('/api/cv/extract', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ analysisId: id }),
+        })
+        if (!res1.ok) throw new Error('Erreur extraction')
+
+        // Étape 2 : Anonymisation  
+        console.log('[Pipeline] Step 2: Anonymize')
+        const res2 = await fetch('/api/cv/anonymize', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ analysisId: id }),
+        })
+        if (!res2.ok) throw new Error('Erreur anonymisation')
+
+        // Étape 3 : Analyse
+        console.log('[Pipeline] Step 3: Analyze')
+        const res3 = await fetch('/api/cv/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ analysisId: id }),
+        })
+        if (!res3.ok) throw new Error('Erreur analyse')
+
+        console.log('[Pipeline] Done!')
+      } catch (err) {
+        console.error('[Pipeline] Error:', err)
+        setError(err instanceof Error ? err.message : 'Erreur')
         setStep('error')
       }
     }
 
+    // Fire & forget - le polling s'occupera de l'UI
     runPipeline()
-    
-    return () => {
-      cancelled = true
-    }
   }, [analysis, loading, step, id])
 
   if (loading) {
@@ -401,32 +395,35 @@ export default function CVAnalysisPage() {
               <div style={{ padding: '1.5rem', backgroundColor: '#DBEAFE', borderRadius: '12px' }}>
                 <div style={{ fontWeight: 600, marginBottom: '1rem', color: '#1E40AF' }}>💡 Plan d'action</div>
                 <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                  {results.recommandations.map((reco: string, i: number) => (
-                    <li key={i} style={{ 
-                      marginBottom: '0.75rem', 
-                      fontSize: '0.875rem',
-                      paddingLeft: '2rem',
-                      position: 'relative'
-                    }}>
-                      <span style={{ 
-                        position: 'absolute', 
-                        left: 0,
-                        width: '24px',
-                        height: '24px',
-                        backgroundColor: '#3B82F6',
-                        color: '#FFF',
-                        borderRadius: '50%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '0.75rem',
-                        fontWeight: 600
+                  {results.recommandations.map((reco, i: number) => {
+                    const text = typeof reco === 'string' ? reco : reco.titre || reco.description
+                    return (
+                      <li key={i} style={{ 
+                        marginBottom: '0.75rem', 
+                        fontSize: '0.875rem',
+                        paddingLeft: '2rem',
+                        position: 'relative'
                       }}>
-                        {i + 1}
-                      </span>
-                      {reco}
-                    </li>
-                  ))}
+                        <span style={{ 
+                          position: 'absolute', 
+                          left: 0,
+                          width: '24px',
+                          height: '24px',
+                          backgroundColor: '#3B82F6',
+                          color: '#FFF',
+                          borderRadius: '50%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '0.75rem',
+                          fontWeight: 600
+                        }}>
+                          {i + 1}
+                        </span>
+                        {text}
+                      </li>
+                    )
+                  })}
                 </ul>
               </div>
             </>

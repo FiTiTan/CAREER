@@ -34,9 +34,11 @@ type CVAnalysis = {
 }
 
 export async function POST(request: NextRequest) {
+  console.log('[Extract] ▶️ Request received');
   try {
     const body = (await request.json()) as ExtractRequestBody;
     const { analysisId } = body;
+    console.log(`[Extract] analysisId: ${analysisId}`);
 
     if (!analysisId) {
       return NextResponse.json(
