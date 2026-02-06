@@ -1,33 +1,105 @@
 {
-  "version": "1.0.0",
-  "templates": {
-    "free": [
-      {
-        "id": "bento-grid",
-        "path": "free/bento-grid",
-        "name": "Bento Grid Layout"
-      },
-      {
-        "id": "glassmorphism",
-        "path": "free/glassmorphism",
-        "name": "Glassmorphism"
-      },
-      {
-        "id": "kinetic-typo",
-        "path": "free/kinetic-typo",
-        "name": "Kinetic Typography"
-      },
-      {
-        "id": "minimal-apple",
-        "path": "free/minimal-apple",
-        "name": "Minimal Apple"
-      },
-      {
-        "id": "organic-flow",
-        "path": "free/organic-flow",
-        "name": "Organic Flow"
-      }
-    ],
-    "premium": []
-  }
+  "version": "2.0.0",
+  "templates": [
+    {
+      "id": "bento-grid",
+      "name": "Bento Grid Layout",
+      "description": "Organisation modulaire façon Apple, cards asymétriques avec bords arrondis",
+      "file": "free/bento-grid.html",
+      "category": "free",
+      "price": 0,
+      "tags": ["moderne", "minimaliste", "tech", "apple"],
+      "idealFor": ["Freelances", "Tech", "Startups"]
+    },
+    {
+      "id": "glassmorphism",
+      "name": "Glassmorphism Affiné",
+      "description": "Transparence, blur, élégance premium",
+      "file": "free/glassmorphism.html",
+      "category": "free",
+      "price": 0,
+      "tags": ["glass", "moderne", "premium", "élégant"],
+      "idealFor": ["Consultants", "Tech", "Designers"]
+    },
+    {
+      "id": "kinetic-typography",
+      "name": "Kinetic Typography",
+      "description": "Animations textuelles percutantes, typographie expressive et mouvement cinétique",
+      "file": "free/kinetic-typography.html",
+      "category": "free",
+      "price": 0,
+      "tags": ["animation", "typographie", "dynamique", "créatif"],
+      "idealFor": ["Créatifs", "Artistes", "Motion Designers"]
+    },
+    {
+      "id": "organic-flow",
+      "name": "Organic/Anti-Grid",
+      "description": "Formes fluides, blobs morphing, liberté visuelle avec compositions asymétriques",
+      "file": "free/organic-flow.html",
+      "category": "free",
+      "price": 0,
+      "tags": ["organique", "fluide", "naturel", "asymétrique"],
+      "idealFor": ["Artisans", "Thérapeutes", "Bien-être"]
+    },
+    {
+      "id": "scroll-storytelling",
+      "name": "Scroll Storytelling",
+      "description": "Expérience narrative cinématographique, sections plein écran avec parallaxe",
+      "file": "free/scroll-storytelling.html",
+      "category": "free",
+      "price": 0,
+      "tags": ["narratif", "cinématique", "parallaxe", "immersif"],
+      "idealFor": ["Photographes", "Vidéastes", "Storytellers"]
+    },
+    {
+      "id": "hand-drawn",
+      "name": "Hand-Drawn Scribble",
+      "description": "Gribouillages, authenticité, fait main",
+      "file": "free/hand-drawn.html",
+      "category": "free",
+      "price": 0,
+      "tags": ["artisanal", "authentique", "sketch", "unique"],
+      "idealFor": ["Artisans", "Illustrateurs", "Créatifs"]
+    },
+    {
+      "id": "exaggerated-hierarchy",
+      "name": "Exaggerated Hierarchy",
+      "description": "Contrastes de tailles extrêmes, titres géants",
+      "file": "free/exaggerated-hierarchy.html",
+      "category": "free",
+      "price": 0,
+      "tags": ["bold", "typographie", "impact", "contrasté"],
+      "idealFor": ["Designers", "Agences", "Créatifs"]
+    },
+    {
+      "id": "3d-immersive",
+      "name": "3D Immersif WebGL",
+      "description": "Profondeur, ombres réalistes, technique",
+      "file": "free/3d-immersive.html",
+      "category": "free",
+      "price": 0,
+      "tags": ["3D", "webgl", "technique", "immersif"],
+      "idealFor": ["Développeurs", "Tech", "Gamers"]
+    },
+    {
+      "id": "dopamine-colors",
+      "name": "Dopamine Colors",
+      "description": "Néons, gradients vibrants, énergie pure",
+      "file": "free/dopamine-colors.html",
+      "category": "free",
+      "price": 0,
+      "tags": ["néon", "vibrant", "coloré", "énergique"],
+      "idealFor": ["Créatifs", "Influenceurs", "Artistes"]
+    },
+    {
+      "id": "tactile-maximalism",
+      "name": "Tactile Maximalism",
+      "description": "Textures 3D, couleurs saturées, design bold avec effets tactiles",
+      "file": "free/tactile-maximalism.html",
+      "category": "free",
+      "price": 0,
+      "tags": ["maximaliste", "texturé", "bold", "tactile"],
+      "idealFor": ["Designers", "Artistes", "Mode"]
+    }
+  ]
 }
