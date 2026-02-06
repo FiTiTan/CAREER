@@ -27,13 +27,21 @@ type Subscription = {
 
 export async function POST(request: NextRequest) {
   try {
-    // 1. Récupérer le fichier
+    // 1. Récupérer le fichier + texte extrait
     const formData = await request.formData();
     const file = formData.get('cv') as File | null;
+    const extractedText = formData.get('extractedText') as string | null;
 
     if (!file) {
       return NextResponse.json(
         { error: 'Aucun fichier fourni. Envoyez votre CV dans le champ "cv".' },
+        { status: 400 }
+      );
+    }
+
+    if (!extractedText) {
+      return NextResponse.json(
+        { error: 'Texte extrait manquant. Le PDF doit être traité côté client.' },
         { status: 400 }
       );
     }
@@ -112,14 +120,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 6. Créer l'entrée en base
+    // 6. Créer l'entrée en base avec le texte extrait
     const { data: analysis, error: dbError } = await (admin as any)
       .from('cv_analyses')
       .insert({
         user_id: user?.id || null,
         file_path: filePath,
         file_name: file.name,
-        status: 'pending',
+        raw_text: extractedText,
+        status: 'extracted', // Skip extraction côté serveur
       })
       .select('id')
       .single();

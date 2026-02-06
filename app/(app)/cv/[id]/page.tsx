@@ -71,7 +71,7 @@ export default function CVAnalysisPage() {
 
     const runPipeline = async () => {
       try {
-        // Étape 1 : Extraction (~2s)
+        // Étape 1 : Extraction (skipped si déjà extracted côté client)
         if (step === 'pending') {
           setStep('extracting')
           const res1 = await fetch('/api/cv/extract', {
@@ -89,7 +89,7 @@ export default function CVAnalysisPage() {
         }
 
         // Étape 2 : Anonymisation (~5-8s)
-        if (step === 'extracted' || step === 'extracting') {
+        if (step === 'extracted') {
           // Petit délai pour laisser le statut se mettre à jour
           await new Promise(resolve => setTimeout(resolve, 500))
           setStep('anonymizing')
