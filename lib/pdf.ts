@@ -1,32 +1,74 @@
-export async function extractTextFromPDF(buffer: ArrayBuffer): Promise<string> {
-  // TODO: Fix pdf-parse ESM/CommonJS compatibility
-  // For now, return placeholder text for testing
-  
-  // Simulate extraction delay
-  await new Promise(resolve => setTimeout(resolve, 2000))
-  
-  return `Jean Dupont
-Développeur Full-Stack Senior
-8 ans d'expérience
+// ============================================================================
+// CareerCare — Extraction PDF
+// ============================================================================
 
-Email: jean.dupont@email.com
-Téléphone: +33 6 12 34 56 78
+import type { PDFExtraction } from '@/types/cv';
+import { cleanExtractedText } from '@/lib/utils';
 
-EXPÉRIENCE PROFESSIONNELLE
+/**
+ * Extrait le texte d'un buffer PDF.
+ * 
+ * Utilise pdf-parse côté serveur uniquement.
+ * Nettoie le texte extrait pour supprimer les artefacts.
+ * 
+ * @param buffer - Le contenu du fichier PDF
+ * @returns Le texte extrait + métadonnées
+ * @throws Si le PDF est invalide ou vide
+ */
+export async function extractTextFromPDF(
+  buffer: Buffer
+): Promise<PDFExtraction> {
+  // Import dynamique pour éviter les erreurs côté client
+  const pdfParse = (await import('pdf-parse')).default;
 
-Senior Full-Stack Developer - TechCorp (2020-2024)
-- Développement d'applications React/Node.js
-- Architecture microservices
-- Gestion équipe de 5 développeurs
+  const result = await pdfParse(buffer, {
+    // Limite à 50 pages pour éviter les abus
+    max: 50,
+  });
 
-Full-Stack Developer - StartupXYZ (2016-2020)
-- Stack MERN (MongoDB, Express, React, Node)
-- CI/CD avec GitLab
-- 50+ features livrées
+  const text = cleanExtractedText(result.text);
 
-COMPÉTENCES
-JavaScript, TypeScript, React, Node.js, PostgreSQL, Docker, AWS
+  if (!text || text.length < 50) {
+    throw new Error(
+      'Le PDF semble vide ou ne contient pas assez de texte. ' +
+      'Assurez-vous que votre CV n\'est pas un scan image.'
+    );
+  }
 
-FORMATION
-Master Informatique - Université Paris-Saclay (2016)`
+  // Tronque à ~15000 caractères (suffisant pour un CV, limite les coûts API)
+  const truncatedText = text.length > 15000 ? text.slice(0, 15000) : text;
+
+  return {
+    text: truncatedText,
+    pageCount: result.numpages,
+    metadata: {
+      title: result.info?.Title || undefined,
+      author: result.info?.Author || undefined,
+    },
+  };
+}
+
+/**
+ * Valide un fichier uploadé avant traitement.
+ * 
+ * @param file - Le fichier à valider
+ * @returns true si valide
+ * @throws Si le fichier est invalide
+ */
+export function validateCVFile(file: File): void {
+  // Vérification du type MIME
+  if (file.type !== 'application/pdf') {
+    throw new Error('Seuls les fichiers PDF sont acceptés.');
+  }
+
+  // Vérification de la taille (5 MB max)
+  const MAX_SIZE = 5 * 1024 * 1024;
+  if (file.size > MAX_SIZE) {
+    throw new Error('Le fichier ne doit pas dépasser 5 Mo.');
+  }
+
+  // Vérification du nom
+  if (!file.name.toLowerCase().endsWith('.pdf')) {
+    throw new Error('Le fichier doit avoir l\'extension .pdf');
+  }
 }

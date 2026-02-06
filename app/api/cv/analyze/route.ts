@@ -1,122 +1,289 @@
-import { createClient } from '@/lib/supabase/server'
-import { NextResponse } from 'next/server'
-import { extractTextFromPDF } from '@/lib/pdf'
-import { anonymizeCV } from '@/lib/ai/mistral'
-import { analyzeCV } from '@/lib/ai/deepseek'
+// ============================================================================
+// CareerCare — API Route : Analyse CV
+// POST /api/cv/analyze
+// ============================================================================
+//
+// Pipeline complet :
+// 1. Récupère le PDF depuis Storage
+// 2. Extrait le texte (pdf-parse)
+// 3. Anonymise via Mistral (EU)
+// 4. Analyse via DeepSeek (texte anonymisé)
+// 5. Stocke le résultat
+// 6. Retourne le rapport (avec dé-anonymisation si user connecté)
+//
+// Temps estimé : 15-30 secondes
+//
+// ============================================================================
 
-export async function POST(request: Request) {
-  let analysisId: string | null = null
-  
+import { NextRequest, NextResponse } from 'next/server';
+import { createSupabaseAdminClient, createSupabaseServerClient } from '@/lib/supabase/server';
+import { extractTextFromPDF } from '@/lib/pdf';
+import { anonymizeCV, deanonymizeResults } from '@/lib/ai/anonymizer';
+import { analyzeCV } from '@/lib/ai/cv-analyzer';
+import type { CVReport } from '@/types/cv';
+
+export const maxDuration = 60; // Vercel Pro : 60s max
+
+interface AnalyzeRequestBody {
+  analysisId: string;
+}
+
+export async function POST(request: NextRequest) {
+  const startTime = Date.now();
+
   try {
-    const body = await request.json()
-    analysisId = body.analysisId
+    // 1. Valider la requête
+    const body = (await request.json()) as AnalyzeRequestBody;
+    const { analysisId } = body;
 
     if (!analysisId) {
-      return NextResponse.json({ error: 'Missing analysisId' }, { status: 400 })
+      return NextResponse.json(
+        { error: 'analysisId est requis.' },
+        { status: 400 }
+      );
     }
 
-    const supabase = await createClient()
+    const admin = createSupabaseAdminClient();
 
-    // 1. Get analysis record
-    const { data: analysis, error: fetchError } = await supabase
+    // 2. Récupérer l'analyse en base
+    const { data: analysis, error: fetchError } = await admin
       .from('cv_analyses')
       .select('*')
       .eq('id', analysisId)
-      .single()
+      .single();
 
     if (fetchError || !analysis) {
-      return NextResponse.json({ error: 'Analysis not found' }, { status: 404 })
+      return NextResponse.json(
+        { error: 'Analyse non trouvée.' },
+        { status: 404 }
+      );
     }
 
-    // Update status to extracting
-    await supabase
-      .from('cv_analyses')
-      .update({ status: 'extracting' })
-      .eq('id', analysisId)
+    if (analysis.status === 'done') {
+      // Déjà analysé — retourner le résultat existant
+      const { data: existingResult } = await admin
+        .from('cv_results')
+        .select('*')
+        .eq('analysis_id', analysisId)
+        .single();
 
-    // 2. Download PDF from storage
-    const { data: fileData, error: downloadError } = await supabase.storage
-      .from('cvs')
-      .download(analysis.file_path)
+      if (existingResult) {
+        return NextResponse.json({
+          report: buildReport(analysis, existingResult),
+          cached: true,
+        });
+      }
+    }
+
+    if (
+      analysis.status !== 'pending' &&
+      analysis.status !== 'error'
+    ) {
+      return NextResponse.json(
+        { error: `Analyse en cours (statut: ${analysis.status}). Veuillez patienter.` },
+        { status: 409 }
+      );
+    }
+
+    // 3. Télécharger le PDF depuis Storage
+    await updateStatus(admin, analysisId, 'extracting');
+
+    const { data: fileData, error: downloadError } = await admin.storage
+      .from('cv-uploads')
+      .download(analysis.file_path);
 
     if (downloadError || !fileData) {
-      await supabase
-        .from('cv_analyses')
-        .update({ status: 'error' })
-        .eq('id', analysisId)
-      return NextResponse.json({ error: 'Failed to download file' }, { status: 500 })
+      await updateStatus(admin, analysisId, 'error');
+      return NextResponse.json(
+        { error: 'Impossible de récupérer le fichier PDF.' },
+        { status: 500 }
+      );
     }
 
-    // 3. Extract text from PDF
-    const buffer = await fileData.arrayBuffer()
-    const rawText = await extractTextFromPDF(buffer)
+    // 4. Extraire le texte
+    const buffer = Buffer.from(await fileData.arrayBuffer());
+    let extraction;
 
-    await supabase
+    try {
+      extraction = await extractTextFromPDF(buffer);
+    } catch (error) {
+      await updateStatus(admin, analysisId, 'error');
+      return NextResponse.json(
+        {
+          error: error instanceof Error
+            ? error.message
+            : 'Erreur lors de l\'extraction du texte.',
+        },
+        { status: 422 }
+      );
+    }
+
+    // Sauvegarder le texte brut
+    await admin
       .from('cv_analyses')
-      .update({ 
-        raw_text: rawText,
-        status: 'anonymizing' 
-      })
-      .eq('id', analysisId)
+      .update({ raw_text: extraction.text, status: 'anonymizing' })
+      .eq('id', analysisId);
 
-    // 4. Anonymize with Mistral
-    const { anonymizedText, anonymizationMap } = await anonymizeCV(rawText)
+    // 5. Anonymiser via Mistral (EU)
+    console.log(`[Pipeline] Anonymisation pour ${analysisId}...`);
+    let anonymization;
 
-    await supabase
+    try {
+      anonymization = await anonymizeCV(extraction.text);
+    } catch (error) {
+      console.error('[Pipeline] Anonymization failed:', error);
+      await updateStatus(admin, analysisId, 'error');
+      return NextResponse.json(
+        { error: 'Erreur lors de l\'anonymisation. Veuillez réessayer.' },
+        { status: 500 }
+      );
+    }
+
+    // Sauvegarder le texte anonymisé + la map (EU only)
+    await admin
       .from('cv_analyses')
-      .update({ 
-        anonymized_text: anonymizedText,
-        anonymization_map: anonymizationMap,
-        status: 'analyzing' 
+      .update({
+        anonymized_text: anonymization.anonymizedText,
+        anonymization_map: anonymization.map,
+        status: 'analyzing',
       })
-      .eq('id', analysisId)
+      .eq('id', analysisId);
 
-    // 5. Analyze with DeepSeek
-    const analysisResult = await analyzeCV(anonymizedText)
+    // 6. Analyser via DeepSeek (texte anonymisé uniquement)
+    console.log(`[Pipeline] Analyse pour ${analysisId}...`);
+    let analysisResult;
 
-    // 6. Save results to database
-    await supabase
+    try {
+      analysisResult = await analyzeCV(anonymization.anonymizedText);
+    } catch (error) {
+      console.error('[Pipeline] Analysis failed:', error);
+      await updateStatus(admin, analysisId, 'error');
+      return NextResponse.json(
+        { error: 'Erreur lors de l\'analyse. Veuillez réessayer.' },
+        { status: 500 }
+      );
+    }
+
+    // 7. Dé-anonymiser les résultats
+    await updateStatus(admin, analysisId, 'deanonymizing');
+
+    const deanonymizedResult = deanonymizeResults(
+      analysisResult,
+      anonymization.map
+    );
+
+    // 8. Stocker le résultat
+    const { data: savedResult, error: saveError } = await admin
       .from('cv_results')
       .insert({
         analysis_id: analysisId,
-        score_global: analysisResult.score_global,
-        scores: analysisResult.scores,
-        diagnostic: analysisResult.diagnostic,
-        forces: analysisResult.forces,
-        faiblesses: analysisResult.faiblesses,
-        recommandations: analysisResult.recommandations,
-        raw_response: analysisResult
+        score_global: deanonymizedResult.scores.global,
+        scores: deanonymizedResult.scores,
+        diagnostic: deanonymizedResult.diagnostic,
+        forces: deanonymizedResult.forces,
+        faiblesses: deanonymizedResult.faiblesses,
+        recommandations: deanonymizedResult.recommandations,
+        raw_response: deanonymizedResult,
       })
+      .select('*')
+      .single();
 
-    // 7. Mark as done
-    await supabase
-      .from('cv_analyses')
-      .update({ status: 'done' })
-      .eq('id', analysisId)
-
-    return NextResponse.json({ 
-      success: true,
-      message: 'Analysis completed successfully'
-    })
-
-  } catch (error) {
-    console.error('Analysis error:', error)
-    
-    // Mark as error in database if we have analysisId
-    if (analysisId) {
-      try {
-        const supabase = await createClient()
-        await supabase
-          .from('cv_analyses')
-          .update({ status: 'error' })
-          .eq('id', analysisId)
-      } catch (dbError) {
-        console.error('Failed to update error status:', dbError)
-      }
+    if (saveError) {
+      console.error('[Pipeline] Save result error:', saveError);
+      // Ne pas fail — le résultat est en mémoire, on le retourne quand même
     }
-    
-    return NextResponse.json({ 
-      error: error instanceof Error ? error.message : 'Internal server error' 
-    }, { status: 500 })
+
+    // 9. Marquer comme terminé
+    await updateStatus(admin, analysisId, 'done');
+
+    // 10. Incrémenter le compteur si user connecté
+    if (analysis.user_id) {
+      await admin.rpc('increment_analyses_count', {
+        p_user_id: analysis.user_id,
+      }).catch(() => {
+        // Non-bloquant
+        console.warn('[Pipeline] Failed to increment analyses count');
+      });
+    }
+
+    const elapsed = Date.now() - startTime;
+    console.log(`[Pipeline] Terminé pour ${analysisId} en ${elapsed}ms`);
+
+    // 11. Déterminer si l'user voit le rapport complet ou partiel
+    const supabase = await createSupabaseServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    let isPartial = true; // Par défaut, rapport partiel (hook gratuit)
+
+    if (user) {
+      const { data: subscription } = await admin
+        .from('subscriptions')
+        .select('plan')
+        .eq('user_id', user.id)
+        .single();
+
+      isPartial = !subscription || subscription.plan === 'free'
+        ? false  // Free users voient le rapport complet pour la 1ère analyse
+        : false; // Pro/Business voient toujours le rapport complet
+    }
+
+    // Construire le rapport
+    const report: CVReport = {
+      id: analysisId,
+      fileName: analysis.file_name || 'CV.pdf',
+      scores: deanonymizedResult.scores,
+      diagnostic: deanonymizedResult.diagnostic,
+      forces: deanonymizedResult.forces,
+      faiblesses: deanonymizedResult.faiblesses,
+      recommandations: deanonymizedResult.recommandations,
+      resumeOptimise: deanonymizedResult.resumeOptimise,
+      motsClesManquants: deanonymizedResult.motsClesManquants,
+      compatibiliteATS: deanonymizedResult.compatibiliteATS,
+      createdAt: new Date().toISOString(),
+      isPartial,
+    };
+
+    return NextResponse.json({ report, cached: false });
+  } catch (error) {
+    console.error('[Pipeline] Unexpected error:', error);
+    return NextResponse.json(
+      { error: 'Erreur interne du serveur.' },
+      { status: 500 }
+    );
   }
+}
+
+// ============================================================================
+// Helpers
+// ============================================================================
+
+async function updateStatus(
+  admin: ReturnType<typeof createSupabaseAdminClient>,
+  analysisId: string,
+  status: string
+) {
+  await admin
+    .from('cv_analyses')
+    .update({ status })
+    .eq('id', analysisId);
+}
+
+function buildReport(
+  analysis: Record<string, unknown>,
+  result: Record<string, unknown>
+): CVReport {
+  return {
+    id: analysis.id as string,
+    fileName: (analysis.file_name as string) || 'CV.pdf',
+    scores: result.scores as CVReport['scores'],
+    diagnostic: result.diagnostic as CVReport['diagnostic'],
+    forces: result.forces as string[],
+    faiblesses: result.faiblesses as string[],
+    recommandations: result.recommandations as CVReport['recommandations'],
+    resumeOptimise: (result.raw_response as Record<string, unknown>)?.resumeOptimise as string | undefined,
+    motsClesManquants: (result.raw_response as Record<string, unknown>)?.motsClesManquants as string[] | undefined,
+    compatibiliteATS: (result.raw_response as Record<string, unknown>)?.compatibiliteATS as number || 50,
+    createdAt: result.created_at as string,
+    isPartial: false,
+  };
 }

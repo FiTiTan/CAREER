@@ -1,63 +1,80 @@
-export async function anonymizeCV(rawText: string): Promise<{
-  anonymizedText: string
-  anonymizationMap: Record<string, string>
-}> {
-  const apiKey = process.env.MISTRAL_API_KEY
+// ============================================================================
+// CareerCare — Client Mistral AI (Anonymisation)
+// ============================================================================
+//
+// Mistral Small 3.1 hébergé en EU (Frankfurt).
+// Utilisé UNIQUEMENT pour l'anonymisation des données personnelles
+// avant envoi vers DeepSeek (hors EU).
+//
+// Architecture RGPD :
+//   CV brut (EU) → Mistral (EU) → texte anonymisé → DeepSeek (Chine)
+//
+// ============================================================================
 
-  if (!apiKey || apiKey === 'pending') {
-    throw new Error('Mistral API key not configured')
+const MISTRAL_API_URL = 'https://api.mistral.ai/v1/chat/completions';
+
+interface MistralMessage {
+  role: 'system' | 'user' | 'assistant';
+  content: string;
+}
+
+interface MistralResponse {
+  choices: {
+    message: {
+      content: string;
+    };
+    finish_reason: string;
+  }[];
+  usage: {
+    prompt_tokens: number;
+    completion_tokens: number;
+    total_tokens: number;
+  };
+}
+
+/**
+ * Appelle l'API Mistral avec les paramètres optimisés pour l'anonymisation.
+ * 
+ * @param messages - Messages de la conversation
+ * @returns Le contenu de la réponse + tokens utilisés
+ */
+export async function callMistral(
+  messages: MistralMessage[]
+): Promise<{ content: string; tokensUsed: number }> {
+  const apiKey = process.env.MISTRAL_API_KEY;
+  if (!apiKey) {
+    throw new Error('MISTRAL_API_KEY manquante dans les variables d\'environnement');
   }
 
-  const prompt = `Tu es un assistant qui anonymise les CVs pour respecter le RGPD.
+  const response = await fetch(MISTRAL_API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: 'mistral-small-latest',
+      messages,
+      temperature: 0.1,      // Très bas — on veut de la précision, pas de créativité
+      max_tokens: 8000,       // Un CV anonymisé fait ~3-5K tokens
+      top_p: 0.95,
+    }),
+  });
 
-Remplace toutes les données personnelles par des tokens :
-- Noms de personnes → [P1], [P2], etc.
-- Emails → [E1], [E2], etc.
-- Téléphones → [T1], [T2], etc.
-- Adresses → [A1], [A2], etc.
-- Noms d'entreprises → [ENT1], [ENT2], etc.
-
-Retourne le texte anonymisé UNIQUEMENT (pas de markdown, pas d'explication).
-
-Texte original :
-${rawText}
-
-Texte anonymisé :`
-
-  try {
-    const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: 'mistral-small-latest',
-        messages: [{ role: 'user', content: prompt }],
-        temperature: 0.1,
-        max_tokens: 2000
-      })
-    })
-
-    if (!response.ok) {
-      throw new Error(`Mistral API error: ${response.status}`)
-    }
-
-    const data = await response.json()
-    const anonymizedText = data.choices[0].message.content.trim()
-
-    // Extract mapping (simple regex for tokens)
-    const anonymizationMap: Record<string, string> = {}
-    
-    // For now, return placeholder map (we'll improve this later)
-    // In production, you'd need to track the actual replacements
-
-    return {
-      anonymizedText,
-      anonymizationMap
-    }
-  } catch (error) {
-    console.error('Anonymization error:', error)
-    throw new Error('Failed to anonymize CV')
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Mistral API error (${response.status}): ${error}`);
   }
+
+  const data = (await response.json()) as MistralResponse;
+
+  const content = data.choices[0]?.message?.content;
+  if (!content) {
+    throw new Error('Mistral a retourné une réponse vide');
+  }
+
+  return {
+    content,
+    tokensUsed: data.usage.total_tokens,
+  };
 }

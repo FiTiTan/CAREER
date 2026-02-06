@@ -1,73 +1,150 @@
-import { createClient } from '@/lib/supabase/server'
-import { NextResponse } from 'next/server'
+// ============================================================================
+// CareerCare — API Route : Upload CV
+// POST /api/cv/upload
+// ============================================================================
+//
+// Accepte un PDF, le valide, l'upload vers Supabase Storage,
+// crée l'entrée en base, et retourne l'ID d'analyse.
+//
+// Accessible SANS authentification (pour le hook gratuit).
+// Si l'user est connecté, le CV est rattaché à son compte.
+//
+// ============================================================================
 
-export async function POST(request: Request) {
+import { NextRequest, NextResponse } from 'next/server';
+import { createSupabaseServerClient, createSupabaseAdminClient } from '@/lib/supabase/server';
+import { isPDF } from '@/lib/utils';
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+
+export async function POST(request: NextRequest) {
   try {
-    const formData = await request.formData()
-    const file = formData.get('file') as File
+    // 1. Récupérer le fichier
+    const formData = await request.formData();
+    const file = formData.get('cv') as File | null;
 
     if (!file) {
-      return NextResponse.json({ error: 'No file provided' }, { status: 400 })
+      return NextResponse.json(
+        { error: 'Aucun fichier fourni. Envoyez un PDF dans le champ "cv".' },
+        { status: 400 }
+      );
     }
 
-    // Validate file type
-    if (!file.type.includes('pdf')) {
-      return NextResponse.json({ error: 'Only PDF files are allowed' }, { status: 400 })
+    // 2. Validations
+    if (file.type !== 'application/pdf') {
+      return NextResponse.json(
+        { error: 'Seuls les fichiers PDF sont acceptés.' },
+        { status: 400 }
+      );
     }
 
-    // Validate file size (5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      return NextResponse.json({ error: 'File too large (max 5MB)' }, { status: 400 })
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json(
+        { error: 'Le fichier ne doit pas dépasser 5 Mo.' },
+        { status: 400 }
+      );
     }
 
-    const supabase = await createClient()
-    
-    // Get current user (if authenticated)
-    const { data: { user } } = await supabase.auth.getUser()
+    const buffer = await file.arrayBuffer();
 
-    // Generate unique filename
-    const timestamp = Date.now()
-    const filename = `${timestamp}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`
-    const filePath = `uploads/${filename}`
+    if (!isPDF(buffer)) {
+      return NextResponse.json(
+        { error: 'Le fichier ne semble pas être un PDF valide.' },
+        { status: 400 }
+      );
+    }
 
-    // Upload to Supabase Storage
-    const fileBuffer = await file.arrayBuffer()
-    const { error: uploadError } = await supabase.storage
-      .from('cvs')
-      .upload(filePath, fileBuffer, {
+    // 3. Identifier l'utilisateur (optionnel)
+    const supabase = await createSupabaseServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    // 4. Vérifier les limites si user connecté
+    if (user) {
+      const { data: subscription } = await supabase
+        .from('subscriptions')
+        .select('plan, analyses_used_this_month, analyses_reset_at')
+        .eq('user_id', user.id)
+        .single();
+
+      if (subscription) {
+        // Reset mensuel si nécessaire
+        const resetDate = new Date(subscription.analyses_reset_at);
+        const now = new Date();
+        const needsReset =
+          now.getMonth() !== resetDate.getMonth() ||
+          now.getFullYear() !== resetDate.getFullYear();
+
+        if (!needsReset) {
+          // Vérifier la limite
+          const limit = subscription.plan === 'free' ? 1 : -1;
+          if (
+            limit > 0 &&
+            subscription.analyses_used_this_month >= limit
+          ) {
+            return NextResponse.json(
+              {
+                error: 'Vous avez atteint votre limite d\'analyses ce mois-ci.',
+                code: 'LIMIT_REACHED',
+                upgrade: true,
+              },
+              { status: 429 }
+            );
+          }
+        }
+      }
+    }
+
+    // 5. Upload vers Supabase Storage
+    const admin = createSupabaseAdminClient();
+    const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+    const filePath = user
+      ? `cvs/${user.id}/${fileName}`
+      : `cvs/anonymous/${fileName}`;
+
+    const { error: uploadError } = await admin.storage
+      .from('cv-uploads')
+      .upload(filePath, Buffer.from(buffer), {
         contentType: 'application/pdf',
-        upsert: false
-      })
+        upsert: false,
+      });
 
     if (uploadError) {
-      console.error('Upload error:', uploadError)
-      return NextResponse.json({ error: 'Upload failed' }, { status: 500 })
+      console.error('[Upload] Storage error:', uploadError);
+      return NextResponse.json(
+        { error: 'Erreur lors de l\'upload du fichier.' },
+        { status: 500 }
+      );
     }
 
-    // Create analysis record
-    const { data: analysis, error: dbError } = await supabase
+    // 6. Créer l'entrée en base
+    const { data: analysis, error: dbError } = await admin
       .from('cv_analyses')
       .insert({
         user_id: user?.id || null,
         file_path: filePath,
         file_name: file.name,
-        status: 'pending'
+        status: 'pending',
       })
       .select('id')
-      .single()
+      .single();
 
     if (dbError || !analysis) {
-      console.error('Database error:', dbError)
-      return NextResponse.json({ error: 'Failed to create analysis' }, { status: 500 })
+      console.error('[Upload] DB error:', dbError);
+      return NextResponse.json(
+        { error: 'Erreur lors de la création de l\'analyse.' },
+        { status: 500 }
+      );
     }
 
-    return NextResponse.json({ 
-      analysisId: analysis.id,
-      message: 'Upload successful' 
-    })
-
+    return NextResponse.json({
+      id: analysis.id,
+      message: 'CV uploadé avec succès. Lancez l\'analyse via POST /api/cv/analyze.',
+    });
   } catch (error) {
-    console.error('Upload error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    console.error('[Upload] Unexpected error:', error);
+    return NextResponse.json(
+      { error: 'Erreur interne du serveur.' },
+      { status: 500 }
+    );
   }
 }
