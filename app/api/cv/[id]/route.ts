@@ -7,6 +7,25 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import type { CVReport } from '@/types/cv';
 
+// Types temporaires
+type CVAnalysis = {
+  id: string
+  user_id?: string | null
+  status: string
+  file_name?: string
+  [key: string]: unknown
+}
+
+type CVResults = {
+  score_global: number
+  scores: Record<string, number>
+  diagnostic: Record<string, string>
+  forces: string[]
+  faiblesses: string[]
+  recommandations: string[]
+  [key: string]: unknown
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -29,7 +48,7 @@ export async function GET(
       .from('cv_analyses')
       .select('*')
       .eq('id', analysisId)
-      .single();
+      .single() as { data: CVAnalysis | null; error: unknown };
 
     if (analysisError || !analysis) {
       return NextResponse.json(
@@ -59,7 +78,7 @@ export async function GET(
       .from('cv_results')
       .select('*')
       .eq('analysis_id', analysisId)
-      .single();
+      .single() as { data: CVResults | null; error: unknown };
 
     if (resultError || !result) {
       return NextResponse.json(
@@ -76,7 +95,7 @@ export async function GET(
         .from('subscriptions')
         .select('plan')
         .eq('user_id', user.id)
-        .single();
+        .single() as { data: { plan: string } | null; error: unknown };
 
       // Free : 1ère analyse complète, ensuite partiel
       // Pro/Business : toujours complet
