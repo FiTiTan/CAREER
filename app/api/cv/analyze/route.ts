@@ -28,6 +28,21 @@ interface AnalyzeRequestBody {
   analysisId: string;
 }
 
+// Types temporaires
+type CVAnalysis = {
+  id: string
+  user_id?: string | null
+  status: string
+  file_name?: string
+  file_path: string
+  [key: string]: unknown
+}
+
+type Subscription = {
+  plan: string
+  [key: string]: unknown
+}
+
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
 
@@ -50,7 +65,7 @@ export async function POST(request: NextRequest) {
       .from('cv_analyses')
       .select('*')
       .eq('id', analysisId)
-      .single();
+      .single() as { data: CVAnalysis | null; error: unknown };
 
     if (fetchError || !analysis) {
       return NextResponse.json(
@@ -65,7 +80,7 @@ export async function POST(request: NextRequest) {
         .from('cv_results')
         .select('*')
         .eq('analysis_id', analysisId)
-        .single();
+        .single() as { data: any; error: unknown };
 
       if (existingResult) {
         return NextResponse.json({
@@ -186,7 +201,7 @@ export async function POST(request: NextRequest) {
         raw_response: deanonymizedResult,
       })
       .select('*')
-      .single();
+      .single() as { data: any; error: unknown };
 
     if (saveError) {
       console.error('[Pipeline] Save result error:', saveError);
@@ -203,7 +218,7 @@ export async function POST(request: NextRequest) {
       }).catch(() => {
         // Non-bloquant
         console.warn('[Pipeline] Failed to increment analyses count');
-      });
+      }) as { data: any; error: unknown };
     }
 
     const elapsed = Date.now() - startTime;

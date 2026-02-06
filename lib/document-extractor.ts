@@ -55,8 +55,9 @@ function detectMimeType(buffer: Buffer, filename?: string): string {
  * Extrait le texte d'un PDF
  */
 async function extractFromPDF(buffer: Buffer): Promise<string> {
-  const pdfParse = (await import('pdf-parse')).default;
-  const result = await pdfParse(buffer, { max: 50 });
+  const pdfParse = await import('pdf-parse');
+  const parse = (pdfParse as any).default || pdfParse;
+  const result = await parse(buffer, { max: 50 });
   return result.text;
 }
 
@@ -148,11 +149,10 @@ export async function extractTextFromDocument(
   
   return {
     text: truncatedText,
-    pageCount,
+    pageCount: pageCount || undefined,
     metadata: {
-      mimeType,
-      originalSize: buffer.length,
-      extractedLength: truncatedText.length,
+      title: undefined,
+      author: undefined,
     },
   };
 }

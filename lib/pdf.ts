@@ -19,9 +19,10 @@ export async function extractTextFromPDF(
   buffer: Buffer
 ): Promise<PDFExtraction> {
   // Import dynamique pour éviter les erreurs côté client
-  const pdfParse = (await import('pdf-parse')).default;
+  const pdfParse = await import('pdf-parse');
+  const parse = (pdfParse as any).default || pdfParse;
 
-  const result = await pdfParse(buffer, {
+  const result = await parse(buffer, {
     // Limite à 50 pages pour éviter les abus
     max: 50,
   });

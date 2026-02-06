@@ -17,6 +17,14 @@ import { validateDocumentFile } from '@/lib/document-extractor';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 
+// Types temporaires
+type Subscription = {
+  plan: string
+  analyses_used_this_month: number
+  analyses_reset_at: string
+  [key: string]: unknown
+}
+
 export async function POST(request: NextRequest) {
   try {
     // 1. Récupérer le fichier
@@ -52,7 +60,7 @@ export async function POST(request: NextRequest) {
         .from('subscriptions')
         .select('plan, analyses_used_this_month, analyses_reset_at')
         .eq('user_id', user.id)
-        .single();
+        .single() as { data: Subscription | null; error: unknown };
 
       if (subscription) {
         // Reset mensuel si nécessaire

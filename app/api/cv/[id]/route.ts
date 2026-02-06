@@ -105,15 +105,15 @@ export async function GET(
     const report: CVReport = {
       id: analysisId,
       fileName: analysis.file_name || 'CV.pdf',
-      scores: result.scores as CVReport['scores'],
-      diagnostic: result.diagnostic as CVReport['diagnostic'],
+      scores: result.scores as unknown as CVReport['scores'],
+      diagnostic: result.diagnostic as unknown as CVReport['diagnostic'],
       forces: (result.forces || []) as string[],
       faiblesses: (result.faiblesses || []) as string[],
-      recommandations: (result.recommandations || []) as CVReport['recommandations'],
+      recommandations: (result.recommandations || []) as unknown as CVReport['recommandations'],
       resumeOptimise: (result.raw_response as Record<string, unknown>)?.resumeOptimise as string | undefined,
       motsClesManquants: (result.raw_response as Record<string, unknown>)?.motsClesManquants as string[] | undefined,
-      compatibiliteATS: (result.raw_response as Record<string, unknown>)?.compatibiliteATS as number || 50,
-      createdAt: result.created_at,
+      compatibiliteATS: ((result.raw_response as Record<string, unknown>)?.compatibiliteATS as number) || 50,
+      createdAt: (result as unknown as { created_at: string }).created_at,
       isPartial,
     };
 
