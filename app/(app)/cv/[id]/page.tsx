@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 export default function CVAnalysisPage() {
-  const params = useParams()
+  const { id } = useParams<{ id: string }>()
   const [analysis, setAnalysis] = useState<any>(null)
   const [results, setResults] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -22,7 +22,7 @@ export default function CVAnalysisPage() {
       const { data: analysisData } = await supabase
         .from('cv_analyses')
         .select('*')
-        .eq('id', params.id)
+        .eq('id', id)
         .single()
 
       if (analysisData) {
@@ -34,7 +34,7 @@ export default function CVAnalysisPage() {
           fetch('/api/cv/analyze', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ analysisId: params.id })
+            body: JSON.stringify({ analysisId: id })
           }).catch(err => {
             console.error('Analysis trigger error:', err)
             setAnalysis({ ...analysisData, status: 'error' })
@@ -46,7 +46,7 @@ export default function CVAnalysisPage() {
           const { data: resultsData } = await supabase
             .from('cv_results')
             .select('*')
-            .eq('analysis_id', params.id)
+            .eq('analysis_id', id)
             .single()
           
           if (resultsData) setResults(resultsData)
@@ -72,7 +72,7 @@ export default function CVAnalysisPage() {
     return () => {
       if (interval) clearInterval(interval)
     }
-  }, [params.id])
+  }, [id])
 
   if (loading) {
     return (
