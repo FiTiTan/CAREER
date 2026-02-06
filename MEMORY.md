@@ -1,5 +1,32 @@
 # MEMORY.md - Mémoire à long terme
 
+## 🎯 Focus projet CareerCare (5-6 février 2026)
+
+**IMPORTANT** : Travail exclusif sur **CareerCare**.
+- SOUVERAIN en sommeil
+- Repo local : `/home/ubuntu/careercare`
+- GitHub : https://github.com/FiTiTan/CAREER
+- **Workflow** : GitHub → Vercel (auto-deploy)
+- ⚠️ **Firewall bloqué** : pas d'accès local http. Tester uniquement sur Vercel.
+- Stack : Next.js 14 + Supabase (EU Frankfurt) + Mistral + DeepSeek
+
+**Intégration pipeline IA complet (6 février 2026)** :
+- ✅ Migration SQL Supabase (profiles, cv_analyses, cv_results, subscriptions)
+- ✅ Bucket Storage `cv-uploads` (5 MB, PDF/DOCX/DOC/TXT)
+- ✅ Pipeline RGPD : PDF → Extraction → Anonymisation Mistral EU → Analyse DeepSeek → Dé-anonymisation
+- ✅ Support multi-format : PDF (pdf-parse), DOCX (mammoth), TXT
+- ✅ Types TypeScript complets (cv.ts, database.ts, subscription.ts)
+- ✅ Routes API : /api/cv/upload, /api/cv/analyze, /api/cv/[id]
+- Coût estimé : ~€0.007 par analyse
+
+**Derniers commits** :
+- `781fd12` - Integration pipeline IA complet
+- `89f7347` - Install pdf-parse
+- `07a7ddf` - Support multi-format CV
+- `b6c0067` - Fix exports compatibilité createClient
+
+---
+
 ## 🧙 Wizard Portfolio V2 + 2 systèmes d'édition (3 février 2026)
 
 **Commits** :
@@ -131,10 +158,22 @@
 
 ---
 
-## 🏗️ Projet SOUVERAIN
+## 🏗️ Projets
 
-**Type** : Application React/Electron  
-**Localisation** : `/home/ubuntu/clawd/SOUVERAIN`
+### ⚠️ SOUVERAIN (EN SOMMEIL)
+
+**Statut** : 🛌 Archivé - Consultation uniquement  
+**Localisation** : `/home/ubuntu/clawd/SOUVERAIN`  
+**Usage** : Référence pour vision, prompts, code, config  
+**Type** : Application React/Electron
+
+### 🚀 CareerCare (PROJET ACTIF)
+
+**Statut** : ✅ En développement actif  
+**Localisation** : `/home/ubuntu/careercare`  
+**Type** : Application Next.js (React) + Supabase  
+**Repo** : https://github.com/FiTiTan/CAREER  
+**Description** : Plateforme d'analyse de CV avec IA (DeepSeek/Mistral)
 
 ### Architecture
 
@@ -358,4 +397,31 @@ generateServicesWithValidation(callAI, data, maxRetries=2)
 - Chaque modif impacte différentes catégories (trade-offs)
 - Équilibrage nécessaire entre toutes les catégories
 - Retry automatique compense variance aléatoire IA
+
+---
+
+## 🐛 CareerCare - Fix useEffect Loop Infinite (5 février 2026)
+
+**Date:** 2026-02-05  
+**Fichier:** `app/(app)/cv/[id]/page.tsx`  
+**Problème:** L'analyse démarrait en boucle au chargement de la page  
+**Cause:** useEffect avec dépendances `analysis?.status`, `hasStarted`, `pollCount` provoquait re-renders en cascade
+
+**Solution:**
+- Remplacé `useState` par `useRef` pour `hasStarted` et `pollCount`
+- Supprimé ces dépendances du tableau de deps du useEffect
+- useEffect ne se déclenche qu'au mount initial (deps: `[params.id]`)
+- Polling continue jusqu'à `status === 'done'` ou max 40 tentatives
+
+**Commit:** `4e2c971` (local VPS, non pushé - pas de clé SSH configurée)
+
+**Impact:**
+- Analyse lancée **1 seule fois** au chargement
+- Polling propre toutes les 3s
+- Pas de requêtes API en boucle infinie
+
+**Leçon apprise:**
+- useEffect avec state dans deps = risque de boucle si state modifié dans effect
+- useRef pour compteurs/flags = plus sûr
+- Toujours vérifier les dépendances du useEffect
 
