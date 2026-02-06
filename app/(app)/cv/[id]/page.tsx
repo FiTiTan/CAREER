@@ -4,10 +4,31 @@ import { useEffect, useState, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
+// Types temporaires en attendant la génération des types Supabase
+type CVAnalysis = {
+  id: string
+  status: string
+  file_name?: string
+  created_at: string
+  [key: string]: unknown
+}
+
+type CVResults = {
+  id: string
+  analysis_id: string
+  score_global: number
+  scores: Record<string, number>
+  diagnostic: Record<string, string>
+  forces: string[]
+  faiblesses: string[]
+  recommandations: string[]
+  [key: string]: unknown
+}
+
 export default function CVAnalysisPage() {
   const { id } = useParams<{ id: string }>()
-  const [analysis, setAnalysis] = useState<any>(null)
-  const [results, setResults] = useState<any>(null)
+  const [analysis, setAnalysis] = useState<CVAnalysis | null>(null)
+  const [results, setResults] = useState<CVResults | null>(null)
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
 
@@ -23,7 +44,7 @@ export default function CVAnalysisPage() {
         .from('cv_analyses')
         .select('*')
         .eq('id', id)
-        .single()
+        .single() as { data: CVAnalysis | null }
 
       if (analysisData) {
         setAnalysis(analysisData)
@@ -47,7 +68,7 @@ export default function CVAnalysisPage() {
             .from('cv_results')
             .select('*')
             .eq('analysis_id', id)
-            .single()
+            .single() as { data: CVResults | null }
           
           if (resultsData) setResults(resultsData)
           if (interval) clearInterval(interval)
