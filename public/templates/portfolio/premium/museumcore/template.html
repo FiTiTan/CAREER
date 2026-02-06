@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{HERO_TITLE}} - Portfolio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --white: #ffffff;
+      --off-white: #fafafa;
+      --light-gray: #f5f5f5;
+      --gray: #e0e0e0;
+      --dark-gray: #6b6b6b;
+      --black: #1a1a1a;
+      --accent: #1a1a1a;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --white: #0a0a0a;
+        --off-white: #121212;
+        --light-gray: #1a1a1a;
+        --gray: #2a2a2a;
+        --dark-gray: #999999;
+        --black: #f5f5f5;
+        --accent: #f5f5f5;
+      }
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--white);
+      color: var(--black);
+      line-height: 1.6;
+      font-weight: 300;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .serif {
+      font-family: 'Playfair Display', Georgia, serif;
+    }
+
+    /* Hero - Museum Entry */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 6rem 2rem;
+      position: relative;
+    }
+
+    .hero-eyebrow {
+      font-size: 0.75rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--dark-gray);
+      margin-bottom: 4rem;
+      font-weight: 500;
+    }
+
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(4rem, 12vw, 8rem);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      line-height: 1;
+      margin-bottom: 3rem;
+      color: var(--accent);
+    }
+
+    .hero-subtitle {
+      font-size: clamp(1rem, 2vw, 1.25rem);
+      max-width: 600px;
+      color: var(--dark-gray);
+      font-weight: 300;
+      line-height: 1.8;
+    }
+
+    /* Spacer - Gallery Breathing Room */
+    .spacer {
+      height: 15vh;
+    }
+
+    .spacer-xl {
+      height: 25vh;
+    }
+
+    /* About - Centered Text Block */
+    .about {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 8rem 2rem;
+      text-align: center;
+    }
+
+    .about-label {
+      font-size: 0.75rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--dark-gray);
+      margin-bottom: 3rem;
+      display: block;
+      font-weight: 500;
+    }
+
+    .about-text {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.5rem, 3vw, 2.25rem);
+      line-height: 1.6;
+      margin-bottom: 4rem;
+      font-weight: 400;
+      color: var(--black);
+    }
+
+    .value-prop {
+      font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+      color: var(--dark-gray);
+      font-weight: 300;
+      line-height: 1.7;
+      font-style: italic;
+      border-top: 1px solid var(--gray);
+      border-bottom: 1px solid var(--gray);
+      padding: 3rem 0;
+    }
+
+    /* Services - Minimal List */
+    .services {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 8rem 2rem;
+    }
+
+    .services-header {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      text-align: center;
+      margin-bottom: 6rem;
+      font-weight: 400;
+      color: var(--accent);
+    }
+
+    .services-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    /* REPEAT: services */
+    .service-item {
+      padding: 3rem 0;
+      border-bottom: 1px solid var(--gray);
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 3rem;
+      align-items: start;
+      transition: all 0.4s ease;
+    }
+
+    .service-item:first-child {
+      border-top: 1px solid var(--gray);
+    }
+
+    .service-item:hover {
+      padding-left: 1rem;
+      background: var(--off-white);
+    }
+
+    .service-number {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      color: var(--dark-gray);
+      font-weight: 400;
+      width: 60px;
+    }
+
+    .service-content {
+      max-width: 700px;
+    }
+
+    .service-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.75rem, 3vw, 2.5rem);
+      margin-bottom: 1rem;
+      font-weight: 500;
+      color: var(--accent);
+    }
+
+    .service-desc {
+      font-size: 1rem;
+      line-height: 1.8;
+      color: var(--dark-gray);
+      font-weight: 300;
+    }
+    /* END REPEAT: services */
+
+    /* Projects - Gallery Grid */
+    .projects {
+      padding: 8rem 2rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .projects-header {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      text-align: center;
+      margin-bottom: 6rem;
+      font-weight: 400;
+      color: var(--accent);
+    }
+
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 4rem;
+    }
+
+    /* REPEAT: projects */
+    .project-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .project-image-container {
+      aspect-ratio: 3/4;
+      overflow: hidden;
+      background: var(--light-gray);
+      position: relative;
+    }
+
+    .project-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      filter: grayscale(0.2);
+    }
+
+    .project-item:hover .project-image {
+      transform: scale(1.05);
+      filter: grayscale(0);
+    }
+
+    .project-info {
+      text-align: center;
+      padding: 0 1rem;
+    }
+
+    .project-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.5rem, 2.5vw, 2rem);
+      margin-bottom: 0.75rem;
+      font-weight: 500;
+      color: var(--accent);
+    }
+
+    .project-desc {
+      font-size: 0.95rem;
+      color: var(--dark-gray);
+      font-weight: 300;
+      line-height: 1.6;
+    }
+    /* END REPEAT: projects */
+
+    /* Contact - Refined */
+    .contact {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 10rem 2rem;
+      text-align: center;
+    }
+
+    .contact-header {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(3rem, 6vw, 5rem);
+      margin-bottom: 2rem;
+      font-weight: 400;
+      color: var(--accent);
+    }
+
+    .contact-subheader {
+      font-size: clamp(1rem, 2vw, 1.25rem);
+      color: var(--dark-gray);
+      margin-bottom: 6rem;
+      font-weight: 300;
+    }
+
+    .contact-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 3rem;
+      margin-bottom: 5rem;
+    }
+
+    .contact-item {
+      padding: 3rem 2rem;
+      background: var(--off-white);
+      border: 1px solid var(--gray);
+      transition: all 0.3s ease;
+    }
+
+    .contact-item:hover {
+      background: var(--light-gray);
+      border-color: var(--accent);
+    }
+
+    .contact-label {
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--dark-gray);
+      margin-bottom: 1rem;
+      display: block;
+      font-weight: 500;
+    }
+
+    .contact-value {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.25rem;
+      color: var(--accent);
+      font-weight: 400;
+    }
+
+    /* Social Links - Refined */
+    .social-links {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      flex-wrap: wrap;
+      padding-top: 4rem;
+      border-top: 1px solid var(--gray);
+    }
+
+    /* REPEAT: social */
+    .social-link {
+      font-size: 0.875rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      text-decoration: none;
+      color: var(--accent);
+      padding: 1rem 2rem;
+      border: 1px solid var(--gray);
+      background: var(--white);
+      transition: all 0.3s ease;
+      font-weight: 400;
+      display: inline-block;
+    }
+
+    .social-link:hover {
+      background: var(--accent);
+      color: var(--white);
+      border-color: var(--accent);
+    }
+    /* END REPEAT: social */
+
+    /* Footer - Minimal */
+    .footer {
+      text-align: center;
+      padding: 4rem 2rem;
+      font-size: 0.75rem;
+      color: var(--dark-gray);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border-top: 1px solid var(--gray);
+      margin-top: 8rem;
+      font-weight: 400;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .hero {
+        padding: 4rem 2rem;
+      }
+
+      .spacer {
+        height: 8vh;
+      }
+
+      .spacer-xl {
+        height: 12vh;
+      }
+
+      .about,
+      .services,
+      .projects,
+      .contact {
+        padding: 5rem 2rem;
+      }
+
+      .service-item {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+
+      .service-number {
+        width: auto;
+      }
+
+      .projects-grid {
+        grid-template-columns: 1fr;
+        gap: 3rem;
+      }
+
+      .contact-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-eyebrow">{{HERO_EYEBROW}}</div>
+    <h1 class="hero-title">{{HERO_TITLE}}</h1>
+    <p class="hero-subtitle">{{HERO_SUBTITLE}}</p>
+  </section>
+
+  <div class="spacer-xl"></div>
+
+  <!-- About -->
+  <section class="about">
+    <span class="about-label">À propos</span>
+    <p class="about-text">{{ABOUT_TEXT}}</p>
+    <div class="value-prop">{{VALUE_PROP}}</div>
+  </section>
+
+  <div class="spacer-xl"></div>
+
+  <!-- Services -->
+  <section class="services">
+    <h2 class="services-header">Expertise</h2>
+    <div class="services-list">
+      <!-- REPEAT: services -->
+      <div class="service-item">
+        <div class="service-number">0{{INDEX}}</div>
+        <div class="service-content">
+          <h3 class="service-title">{{SERVICE_TITLE}}</h3>
+          <p class="service-desc">{{SERVICE_DESC}}</p>
+        </div>
+      </div>
+      <!-- END REPEAT: services -->
+    </div>
+  </section>
+
+  <div class="spacer-xl"></div>
+
+  <!-- Projects -->
+  <!-- IF: has_projects -->
+  <section class="projects">
+    <h2 class="projects-header">Sélection</h2>
+    <div class="projects-grid">
+      <!-- REPEAT: projects -->
+      <div class="project-item">
+        <div class="project-image-container">
+          <img src="{{PROJECT_IMAGE}}" alt="{{PROJECT_TITLE}}" class="project-image">
+        </div>
+        <div class="project-info">
+          <h3 class="project-title">{{PROJECT_TITLE}}</h3>
+          <p class="project-desc">{{PROJECT_DESC}}</p>
+        </div>
+      </div>
+      <!-- END REPEAT: projects -->
+    </div>
+  </section>
+
+  <div class="spacer-xl"></div>
+  <!-- ENDIF: has_projects -->
+
+  <!-- Contact -->
+  <section class="contact">
+    <h2 class="contact-header">Contact</h2>
+    <p class="contact-subheader">Discutons de votre vision</p>
+    
+    <div class="contact-grid">
+      <div class="contact-item">
+        <span class="contact-label">Email</span>
+        <div class="contact-value">{{CONTACT_EMAIL}}</div>
+      </div>
+      <!-- IF: has_phone -->
+      <div class="contact-item">
+        <span class="contact-label">Téléphone</span>
+        <div class="contact-value">{{CONTACT_PHONE}}</div>
+      </div>
+      <!-- ENDIF: has_phone -->
+      <!-- IF: has_address -->
+      <div class="contact-item">
+        <span class="contact-label">Adresse</span>
+        <div class="contact-value">{{CONTACT_ADDRESS}}</div>
+      </div>
+      <!-- ENDIF: has_address -->
+    </div>
+
+    <div class="social-links">
+      <!-- REPEAT: social -->
+      <a href="{{SOCIAL_URL}}" class="social-link" target="_blank" rel="noopener">{{SOCIAL_PLATFORM}}</a>
+      <!-- END REPEAT: social -->
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    &copy; {{CURRENT_YEAR}} {{HERO_TITLE}}
+  </footer>
+</body>
+</html>

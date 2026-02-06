@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{HERO_TITLE}} - Portfolio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --navy: #0a1628;
+      --navy-light: #1a2f4d;
+      --navy-lighter: #2d4563;
+      --gold: #d4af37;
+      --gold-light: #e6c45c;
+      --gold-dark: #b8962b;
+      --cream: #faf8f3;
+      --cream-dark: #f0ede3;
+      --text-light: #6b7280;
+      --white: #ffffff;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --cream: #1a1a1a;
+        --cream-dark: #242424;
+        --white: #0a0a0a;
+        --text-light: #9ca3af;
+      }
+    }
+
+    body {
+      font-family: 'Montserrat', -apple-system, sans-serif;
+      background: var(--cream);
+      color: var(--navy);
+      line-height: 1.7;
+      font-weight: 400;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .serif {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+    }
+
+    /* Decorative Elements */
+    .gold-line {
+      width: 60px;
+      height: 3px;
+      background: linear-gradient(90deg, var(--gold) 0%, var(--gold-light) 100%);
+      margin: 2rem auto;
+    }
+
+    /* Hero - Luxury Introduction */
+    .hero {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+      color: var(--cream);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 6rem 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(212, 175, 55, 0.1) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: -30%;
+      left: -20%;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(212, 175, 55, 0.08) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 900px;
+    }
+
+    .hero-eyebrow {
+      font-size: 0.875rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--gold-light);
+      margin-bottom: 2rem;
+      font-weight: 500;
+    }
+
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(4rem, 10vw, 7rem);
+      font-weight: 600;
+      line-height: 1.1;
+      margin-bottom: 2rem;
+      background: linear-gradient(135deg, var(--cream) 0%, var(--gold-light) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-subtitle {
+      font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+      color: var(--cream-dark);
+      font-weight: 300;
+      line-height: 1.6;
+      max-width: 700px;
+      margin: 0 auto 3rem;
+    }
+
+    .hero-cta {
+      display: inline-block;
+      padding: 1rem 3rem;
+      background: var(--gold);
+      color: var(--navy);
+      text-decoration: none;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-size: 0.875rem;
+      transition: all 0.3s ease;
+      border: 2px solid var(--gold);
+    }
+
+    .hero-cta:hover {
+      background: transparent;
+      color: var(--gold);
+      box-shadow: 0 0 30px rgba(212, 175, 55, 0.3);
+    }
+
+    /* About - Refined Section */
+    .about {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 8rem 2rem;
+      text-align: center;
+    }
+
+    .section-eyebrow {
+      font-size: 0.875rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      font-weight: 600;
+      color: var(--navy);
+      margin-bottom: 1.5rem;
+    }
+
+    .about-text {
+      font-size: clamp(1.125rem, 2vw, 1.5rem);
+      line-height: 1.8;
+      color: var(--text-light);
+      margin-bottom: 3rem;
+    }
+
+    .value-prop-box {
+      background: var(--white);
+      padding: 3rem;
+      border: 1px solid var(--gold);
+      position: relative;
+      margin-top: 4rem;
+    }
+
+    .value-prop-box::before {
+      content: '';
+      position: absolute;
+      top: -10px;
+      left: -10px;
+      right: 10px;
+      bottom: 10px;
+      border: 2px solid var(--gold-light);
+      pointer-events: none;
+    }
+
+    .value-prop {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.5rem, 3vw, 2.25rem);
+      font-weight: 500;
+      font-style: italic;
+      color: var(--navy);
+      line-height: 1.5;
+    }
+
+    /* Services - Premium Grid */
+    .services {
+      background: var(--navy);
+      color: var(--cream);
+      padding: 8rem 2rem;
+    }
+
+    .services-container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .services-header {
+      text-align: center;
+      margin-bottom: 5rem;
+    }
+
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 3rem;
+    }
+
+    /* REPEAT: services */
+    .service-card {
+      background: var(--navy-light);
+      padding: 3rem 2.5rem;
+      border: 1px solid var(--navy-lighter);
+      position: relative;
+      transition: all 0.4s ease;
+    }
+
+    .service-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--gold) 0%, var(--gold-light) 100%);
+      transition: width 0.4s ease;
+    }
+
+    .service-card:hover {
+      border-color: var(--gold);
+      transform: translateY(-5px);
+      box-shadow: 0 10px 40px rgba(212, 175, 55, 0.15);
+    }
+
+    .service-card:hover::before {
+      width: 100%;
+    }
+
+    .service-number {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 3rem;
+      color: var(--gold);
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      opacity: 0.3;
+    }
+
+    .service-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.75rem, 3vw, 2.25rem);
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: var(--gold-light);
+    }
+
+    .service-desc {
+      font-size: 1rem;
+      line-height: 1.8;
+      color: var(--cream-dark);
+    }
+    /* END REPEAT: services */
+
+    /* Projects - Portfolio Showcase */
+    .projects {
+      padding: 8rem 2rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .projects-header {
+      text-align: center;
+      margin-bottom: 5rem;
+    }
+
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+      gap: 3rem;
+    }
+
+    /* REPEAT: projects */
+    .project-item {
+      position: relative;
+      overflow: hidden;
+      background: var(--white);
+      border: 1px solid var(--cream-dark);
+      transition: all 0.4s ease;
+    }
+
+    .project-item:hover {
+      border-color: var(--gold);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    .project-image-wrapper {
+      aspect-ratio: 4/3;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .project-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.6s ease;
+      filter: saturate(0.8);
+    }
+
+    .project-item:hover .project-image {
+      transform: scale(1.1);
+      filter: saturate(1);
+    }
+
+    .project-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(10, 22, 40, 0.9) 0%, transparent 60%);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 2rem;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+
+    .project-item:hover .project-overlay {
+      opacity: 1;
+    }
+
+    .project-content {
+      padding: 2rem;
+    }
+
+    .project-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.5rem, 2.5vw, 2rem);
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+      color: var(--navy);
+    }
+
+    .project-desc {
+      font-size: 0.95rem;
+      color: var(--text-light);
+      line-height: 1.6;
+    }
+    /* END REPEAT: projects */
+
+    /* Contact - Luxury CTA */
+    .contact {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+      color: var(--cream);
+      padding: 8rem 2rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .contact::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 800px;
+      height: 800px;
+      background: radial-gradient(circle, rgba(212, 175, 55, 0.05) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+
+    .contact-content {
+      position: relative;
+      z-index: 1;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .contact-header {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(3rem, 6vw, 5rem);
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      color: var(--gold-light);
+    }
+
+    .contact-subtitle {
+      font-size: clamp(1.125rem, 2vw, 1.5rem);
+      color: var(--cream-dark);
+      margin-bottom: 4rem;
+      font-weight: 300;
+    }
+
+    .contact-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
+      margin-bottom: 4rem;
+    }
+
+    .contact-item {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      padding: 2.5rem 2rem;
+      border: 1px solid rgba(212, 175, 55, 0.2);
+      transition: all 0.3s ease;
+    }
+
+    .contact-item:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: var(--gold);
+      transform: translateY(-5px);
+    }
+
+    .contact-label {
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold-light);
+      margin-bottom: 1rem;
+      display: block;
+      font-weight: 600;
+    }
+
+    .contact-value {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem;
+      color: var(--cream);
+      font-weight: 500;
+    }
+
+    /* Social Links - Refined */
+    .social-links {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      margin-top: 3rem;
+    }
+
+    /* REPEAT: social */
+    .social-link {
+      padding: 1rem 2.5rem;
+      background: transparent;
+      color: var(--gold);
+      border: 2px solid var(--gold);
+      text-decoration: none;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-size: 0.875rem;
+      transition: all 0.3s ease;
+      display: inline-block;
+    }
+
+    .social-link:hover {
+      background: var(--gold);
+      color: var(--navy);
+      box-shadow: 0 0 30px rgba(212, 175, 55, 0.4);
+    }
+    /* END REPEAT: social */
+
+    /* Footer - Elegant */
+    .footer {
+      background: var(--navy);
+      color: var(--cream-dark);
+      text-align: center;
+      padding: 3rem 2rem;
+      font-size: 0.875rem;
+      letter-spacing: 0.1em;
+      border-top: 1px solid var(--gold);
+    }
+
+    .footer-content {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .hero,
+      .about,
+      .services,
+      .projects,
+      .contact {
+        padding: 5rem 2rem;
+      }
+
+      .services-grid,
+      .projects-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+
+      .contact-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .value-prop-box::before {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-eyebrow">{{HERO_EYEBROW}}</div>
+      <h1 class="hero-title">{{HERO_TITLE}}</h1>
+      <p class="hero-subtitle">{{HERO_SUBTITLE}}</p>
+      <div class="gold-line"></div>
+    </div>
+  </section>
+
+  <!-- About -->
+  <section class="about">
+    <div class="section-eyebrow">À propos</div>
+    <h2 class="section-title">Excellence & Expertise</h2>
+    <div class="gold-line"></div>
+    <p class="about-text">{{ABOUT_TEXT}}</p>
+    <div class="value-prop-box">
+      <p class="value-prop">{{VALUE_PROP}}</p>
+    </div>
+  </section>
+
+  <!-- Services -->
+  <section class="services">
+    <div class="services-container">
+      <div class="services-header">
+        <div class="section-eyebrow">Services</div>
+        <h2 class="section-title" style="color: var(--gold-light);">Notre Expertise</h2>
+        <div class="gold-line"></div>
+      </div>
+      <div class="services-grid">
+        <!-- REPEAT: services -->
+        <div class="service-card">
+          <div class="service-number">0{{INDEX}}</div>
+          <h3 class="service-title">{{SERVICE_TITLE}}</h3>
+          <p class="service-desc">{{SERVICE_DESC}}</p>
+        </div>
+        <!-- END REPEAT: services -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Projects -->
+  <!-- IF: has_projects -->
+  <section class="projects">
+    <div class="projects-header">
+      <div class="section-eyebrow">Portfolio</div>
+      <h2 class="section-title">Réalisations</h2>
+      <div class="gold-line"></div>
+    </div>
+    <div class="projects-grid">
+      <!-- REPEAT: projects -->
+      <div class="project-item">
+        <div class="project-image-wrapper">
+          <img src="{{PROJECT_IMAGE}}" alt="{{PROJECT_TITLE}}" class="project-image">
+          <div class="project-overlay"></div>
+        </div>
+        <div class="project-content">
+          <h3 class="project-title">{{PROJECT_TITLE}}</h3>
+          <p class="project-desc">{{PROJECT_DESC}}</p>
+        </div>
+      </div>
+      <!-- END REPEAT: projects -->
+    </div>
+  </section>
+  <!-- ENDIF: has_projects -->
+
+  <!-- Contact -->
+  <section class="contact">
+    <div class="contact-content">
+      <h2 class="contact-header">Parlons de Votre Projet</h2>
+      <p class="contact-subtitle">Ensemble, donnons vie à vos ambitions</p>
+      
+      <div class="contact-grid">
+        <div class="contact-item">
+          <span class="contact-label">Email</span>
+          <div class="contact-value">{{CONTACT_EMAIL}}</div>
+        </div>
+        <!-- IF: has_phone -->
+        <div class="contact-item">
+          <span class="contact-label">Téléphone</span>
+          <div class="contact-value">{{CONTACT_PHONE}}</div>
+        </div>
+        <!-- ENDIF: has_phone -->
+        <!-- IF: has_address -->
+        <div class="contact-item">
+          <span class="contact-label">Adresse</span>
+          <div class="contact-value">{{CONTACT_ADDRESS}}</div>
+        </div>
+        <!-- ENDIF: has_address -->
+      </div>
+
+      <div class="social-links">
+        <!-- REPEAT: social -->
+        <a href="{{SOCIAL_URL}}" class="social-link" target="_blank" rel="noopener">{{SOCIAL_PLATFORM}}</a>
+        <!-- END REPEAT: social -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-content">
+      &copy; {{CURRENT_YEAR}} {{HERO_TITLE}} - Excellence professionnelle depuis des années
+    </div>
+  </footer>
+</body>
+</html>

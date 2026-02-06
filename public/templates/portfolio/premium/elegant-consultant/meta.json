@@ -1,0 +1,15 @@
+{
+  "id": "elegant-consultant",
+  "name": "Elegant Consultant",
+  "description": "Style corporate premium, bleu marine + or/doré, typographie classique raffinée",
+  "category": "premium",
+  "price": 4.99,
+  "version": "1.0.0",
+  "author": "CareerCare",
+  "tags": ["corporate", "luxe", "elegant", "professionnel", "consultant"],
+  "idealFor": ["Avocats", "Consultants", "Finance"],
+  "sections": {
+    "obligatoires": ["hero", "about", "services", "contact"],
+    "optionnelles": ["projects"]
+  }
+}

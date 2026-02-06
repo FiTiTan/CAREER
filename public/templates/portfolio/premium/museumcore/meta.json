@@ -1,0 +1,15 @@
+{
+  "id": "museumcore",
+  "name": "Museumcore",
+  "description": "Style galerie d'art épuré, beaucoup d'espace blanc, typographie serif élégante",
+  "category": "premium",
+  "price": 4.99,
+  "version": "1.0.0",
+  "author": "CareerCare",
+  "tags": ["minimaliste", "élégant", "art", "luxe", "galerie"],
+  "idealFor": ["Artistes", "Galeristes", "Luxe"],
+  "sections": {
+    "obligatoires": ["hero", "about", "services", "contact"],
+    "optionnelles": ["projects"]
+  }
+}

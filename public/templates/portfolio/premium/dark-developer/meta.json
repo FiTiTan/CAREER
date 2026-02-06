@@ -1,0 +1,15 @@
+{
+  "id": "dark-developer",
+  "name": "Dark Developer",
+  "description": "Mode sombre type terminal/IDE, accent vert néon ou cyan, police monospace",
+  "category": "premium",
+  "price": 4.99,
+  "version": "1.0.0",
+  "author": "CareerCare",
+  "tags": ["dark", "developer", "tech", "terminal", "code"],
+  "idealFor": ["Développeurs", "Tech", "Open Source"],
+  "sections": {
+    "obligatoires": ["hero", "about", "services", "contact"],
+    "optionnelles": ["projects"]
+  }
+}
