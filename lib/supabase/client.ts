@@ -14,3 +14,6 @@ export function createSupabaseBrowserClient() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 }
+
+// Export de compatibilité pour les anciens imports
+export const createClient = createSupabaseBrowserClient;

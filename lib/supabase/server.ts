@@ -53,3 +53,6 @@ export function createSupabaseAdminClient() {
     }
   );
 }
+
+// Export de compatibilité pour les anciens imports
+export const createClient = createSupabaseServerClient;
