@@ -20,7 +20,7 @@ import { analyzeCV } from '@/lib/ai/cv-analyzer';
 import { deanonymizeResults } from '@/lib/ai/anonymizer';
 import type { CVReport } from '@/types/cv';
 
-export const maxDuration = 10;
+export const maxDuration = 25;
 
 interface AnalyzeRequestBody {
   analysisId: string;
