@@ -181,7 +181,7 @@ export default function CVAnalysisPage() {
                   {analysis?.file_name || 'CV.pdf'}
                 </div>
                 <div style={{ fontSize: '0.875rem', color: '#6B7280' }}>
-                  Uploadé le {new Date(analysis?.created_at).toLocaleString('fr-FR')}
+                  Uploadé le {analysis?.created_at ? new Date(analysis.created_at).toLocaleString('fr-FR') : ''}
                 </div>
               </div>
             </div>
