@@ -1,6 +1,3 @@
-'use client'
-
-import { Suspense } from 'react'
 import CVUploader from '@/components/cv/CVUploader'
 
 export default function NewCVPage() {

@@ -1,24 +1,54 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import * as pdfjsLib from 'pdfjs-dist'
 
-// Configure worker
-if (typeof window !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`
-}
+// Charger pdfjs-dist via CDN (pas npm) pour éviter canvas build errors
+const PDFJS_CDN = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js'
+const PDFJS_WORKER = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js'
 
 export default function CVUploader() {
   const [isDragging, setIsDragging] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [extracting, setExtracting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [pdfjsLoaded, setPdfjsLoaded] = useState(false)
   const router = useRouter()
 
+  // Charger pdfjs-dist depuis CDN au montage
+  useEffect(() => {
+    if (typeof window === 'undefined' || pdfjsLoaded) return
+
+    const script = document.createElement('script')
+    script.src = PDFJS_CDN
+    script.async = true
+    script.onload = () => {
+      // @ts-ignore
+      if (window.pdfjsLib) {
+        // @ts-ignore
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_WORKER
+        setPdfjsLoaded(true)
+      }
+    }
+    script.onerror = () => {
+      setError('Erreur de chargement du module PDF. Veuillez recharger la page.')
+    }
+    document.head.appendChild(script)
+
+    return () => {
+      document.head.removeChild(script)
+    }
+  }, [])
+
   const extractTextFromPDF = async (file: File): Promise<string> => {
+    // @ts-ignore
+    if (!window.pdfjsLib) {
+      throw new Error('Module PDF non chargé')
+    }
+
     const arrayBuffer = await file.arrayBuffer()
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
+    // @ts-ignore
+    const pdf = await window.pdfjsLib.getDocument({ data: arrayBuffer }).promise
     const numPages = pdf.numPages
     const textParts: string[] = []
 
@@ -43,6 +73,11 @@ export default function CVUploader() {
 
     if (file.size > 5 * 1024 * 1024) { // 5MB
       setError('Le fichier ne doit pas dépasser 5 MB')
+      return
+    }
+
+    if (!pdfjsLoaded) {
+      setError('Module PDF en cours de chargement... Veuillez réessayer dans quelques secondes.')
       return
     }
 
@@ -92,7 +127,7 @@ export default function CVUploader() {
 
     const file = e.dataTransfer.files[0]
     if (file) handleFile(file)
-  }, [])
+  }, [pdfjsLoaded])
 
   const onFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -113,7 +148,8 @@ export default function CVUploader() {
         textAlign: 'center',
         backgroundColor: isDragging ? '#F0FDFA' : '#FFFFFF',
         transition: 'all 0.2s',
-        cursor: isProcessing ? 'not-allowed' : 'pointer'
+        cursor: isProcessing ? 'not-allowed' : 'pointer',
+        opacity: pdfjsLoaded ? 1 : 0.7
       }}
     >
       {/* Icon */}
@@ -130,7 +166,22 @@ export default function CVUploader() {
         </svg>
       </div>
 
-      {isProcessing ? (
+      {!pdfjsLoaded && !error ? (
+        <>
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '0.5rem' }}>
+            Chargement du module PDF...
+          </h3>
+          <div style={{
+            width: '48px',
+            height: '48px',
+            margin: '1rem auto',
+            border: '3px solid #E5E7EB',
+            borderTop: '3px solid #0D9488',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite'
+          }} />
+        </>
+      ) : isProcessing ? (
         <>
           <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '0.5rem' }}>
             {extracting && 'Lecture du PDF...'}
@@ -158,15 +209,15 @@ export default function CVUploader() {
           <label style={{
             display: 'inline-block',
             padding: '0.75rem 1.5rem',
-            backgroundColor: '#1F2937',
+            backgroundColor: pdfjsLoaded ? '#1F2937' : '#9CA3AF',
             color: '#FFFFFF',
             borderRadius: '8px',
             fontWeight: 500,
-            cursor: 'pointer',
+            cursor: pdfjsLoaded ? 'pointer' : 'not-allowed',
             transition: 'background 0.2s'
           }}
-          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#374151'}
-          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#1F2937'}
+          onMouseEnter={(e) => pdfjsLoaded && (e.currentTarget.style.backgroundColor = '#374151')}
+          onMouseLeave={(e) => pdfjsLoaded && (e.currentTarget.style.backgroundColor = '#1F2937')}
           >
             Choisir un fichier
             <input
@@ -174,7 +225,7 @@ export default function CVUploader() {
               accept=".pdf"
               onChange={onFileSelect}
               style={{ display: 'none' }}
-              disabled={isProcessing}
+              disabled={isProcessing || !pdfjsLoaded}
             />
           </label>
         </>
