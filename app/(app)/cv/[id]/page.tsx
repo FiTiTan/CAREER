@@ -69,10 +69,18 @@ export default function CVAnalysisPage() {
   useEffect(() => {
     if (!analysis || loading || step === 'done' || step === 'error') return
 
+    // Flag pour éviter les doubles exécutions
+    let cancelled = false
+
     const runPipeline = async () => {
+      // Variable locale qui avance SANS attendre le re-render React
+      let currentStep = step
+
       try {
         // Étape 1 : Extraction PDF côté serveur (~2-3s)
-        if (step === 'pending') {
+        if (currentStep === 'pending') {
+          setStep('extracting')
+          
           const res1 = await fetch('/api/cv/extract', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -84,20 +92,13 @@ export default function CVAnalysisPage() {
             throw new Error(err.error || 'Erreur lors de l\'extraction')
           }
           
-          await new Promise(resolve => setTimeout(resolve, 500))
-          const { data: updatedAnalysis } = await supabase
-            .from('cv_analyses')
-            .select('*')
-            .eq('id', id)
-            .single() as { data: CVAnalysis | null }
-          
-          if (updatedAnalysis) {
-            setStep(updatedAnalysis.status as PipelineStep)
-          }
+          if (cancelled) return
+          currentStep = 'anonymizing'
+          setStep('anonymizing')
         }
 
         // Étape 2 : Anonymisation (~5-8s)
-        if (step === 'anonymizing') {
+        if (currentStep === 'anonymizing') {
           const res2 = await fetch('/api/cv/anonymize', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -109,20 +110,13 @@ export default function CVAnalysisPage() {
             throw new Error(err.error || 'Erreur lors de l\'anonymisation')
           }
           
-          await new Promise(resolve => setTimeout(resolve, 500))
-          const { data: updatedAnalysis } = await supabase
-            .from('cv_analyses')
-            .select('*')
-            .eq('id', id)
-            .single() as { data: CVAnalysis | null }
-          
-          if (updatedAnalysis) {
-            setStep(updatedAnalysis.status as PipelineStep)
-          }
+          if (cancelled) return
+          currentStep = 'analyzing'
+          setStep('analyzing')
         }
 
         // Étape 3 : Analyse IA (~10-15s)
-        if (step === 'analyzing') {
+        if (currentStep === 'analyzing') {
           const res3 = await fetch('/api/cv/analyze', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -134,6 +128,7 @@ export default function CVAnalysisPage() {
             throw new Error(err.error || 'Erreur lors de l\'analyse')
           }
           
+          if (cancelled) return
           setStep('done')
           
           // Recharger les résultats depuis la base
@@ -146,6 +141,7 @@ export default function CVAnalysisPage() {
           if (resultsData) setResults(resultsData)
         }
       } catch (err) {
+        if (cancelled) return
         console.error('Pipeline error:', err)
         setError(err instanceof Error ? err.message : 'Une erreur est survenue')
         setStep('error')
@@ -153,6 +149,10 @@ export default function CVAnalysisPage() {
     }
 
     runPipeline()
+    
+    return () => {
+      cancelled = true
+    }
   }, [analysis, loading, step, id])
 
   if (loading) {
