@@ -4,14 +4,20 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState('');
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!acceptedTerms) {
+      setError('Vous devez accepter les conditions d\'utilisation');
+      return;
+    }
+
     setLoading(true);
     setError('');
 
@@ -19,7 +25,7 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        emailRedirectTo: `${window.location.origin}/auth/callback?onboarding=true`,
       },
     });
 
@@ -32,23 +38,13 @@ export default function LoginPage() {
     }
   };
 
-  const handleGoogleLogin = async () => {
-    const supabase = createClient();
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
-  };
-
   if (sent) {
     return (
       <div className="text-center">
         <div className="text-5xl mb-4">✉️</div>
         <h1 className="text-2xl font-bold mb-2">Vérifiez vos emails</h1>
         <p className="text-secondary mb-6">
-          Un lien de connexion a été envoyé à <strong>{email}</strong>
+          Un lien d'activation a été envoyé à <strong>{email}</strong>
         </p>
         <button
           onClick={() => setSent(false)}
@@ -66,9 +62,9 @@ export default function LoginPage() {
         <div className="w-16 h-16 rounded-2xl bg-primary mx-auto flex items-center justify-center text-2xl mb-4">
           ◆
         </div>
-        <h1 className="text-2xl font-bold">Connexion</h1>
+        <h1 className="text-2xl font-bold">Créer un compte</h1>
         <p className="text-secondary mt-1">
-          Accédez à votre espace CareerCare
+          Rejoignez CareerCare gratuitement
         </p>
       </div>
 
@@ -85,6 +81,25 @@ export default function LoginPage() {
           />
         </div>
 
+        <label className="flex items-start gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={acceptedTerms}
+            onChange={(e) => setAcceptedTerms(e.target.checked)}
+            className="mt-1"
+          />
+          <span className="text-sm text-secondary">
+            J'accepte les{' '}
+            <Link href="/cgu" className="text-primary hover:underline">
+              conditions d'utilisation
+            </Link>{' '}
+            et la{' '}
+            <Link href="/confidentialite" className="text-primary hover:underline">
+              politique de confidentialité
+            </Link>
+          </span>
+        </label>
+
         {error && (
           <p className="text-error text-sm">{error}</p>
         )}
@@ -94,30 +109,14 @@ export default function LoginPage() {
           className="btn btn-primary w-full"
           disabled={loading}
         >
-          {loading ? 'Envoi...' : 'Recevoir le lien magique'}
+          {loading ? 'Création...' : 'Créer mon compte'}
         </button>
       </form>
 
-      <div className="relative my-6">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-subtle"></div>
-        </div>
-        <div className="relative flex justify-center text-sm">
-          <span className="px-2 bg-[var(--calm-bg)] text-muted">ou</span>
-        </div>
-      </div>
-
-      <button
-        onClick={handleGoogleLogin}
-        className="btn btn-secondary w-full"
-      >
-        <span>🔵</span> Continuer avec Google
-      </button>
-
       <p className="text-center text-sm text-muted mt-6">
-        Pas encore de compte ?{' '}
-        <Link href="/register" className="text-primary hover:underline">
-          Créer un compte
+        Déjà un compte ?{' '}
+        <Link href="/login" className="text-primary hover:underline">
+          Se connecter
         </Link>
       </p>
     </div>

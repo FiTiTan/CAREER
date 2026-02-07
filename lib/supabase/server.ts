@@ -1,59 +1,32 @@
-// ============================================================================
-// CareerCare — Supabase Server Client
-// ============================================================================
-
-import { createServerClient } from '@supabase/ssr';
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
-import type { Database } from '@/types/database';
 
-/**
- * Crée un client Supabase pour les Server Components et API Routes.
- * Utilise les cookies pour maintenir la session auth.
- */
-export async function createSupabaseServerClient() {
+export async function createClient() {
   const cookieStore = await cookies();
 
-  return createServerClient<Database>(
+  return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll() {
-          return cookieStore.getAll();
+        get(name: string) {
+          return cookieStore.get(name)?.value;
         },
-        setAll(cookiesToSet) {
+        set(name: string, value: string, options: CookieOptions) {
           try {
-            cookiesToSet.forEach(({ name, value, options }) => {
-              cookieStore.set(name, value, options);
-            });
-          } catch {
-            // Ignore en Server Components (read-only)
+            cookieStore.set({ name, value, ...options });
+          } catch (error) {
+            // Handle cookies in Server Components
+          }
+        },
+        remove(name: string, options: CookieOptions) {
+          try {
+            cookieStore.set({ name, value: '', ...options });
+          } catch (error) {
+            // Handle cookies in Server Components
           }
         },
       },
     }
   );
 }
-
-/**
- * Crée un client Supabase admin (bypass RLS).
- * À utiliser UNIQUEMENT dans les API routes pour les opérations système.
- */
-export function createSupabaseAdminClient() {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const { createClient } = require('@supabase/supabase-js');
-
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    }
-  ) as ReturnType<typeof createServerClient<Database>>;
-}
-
-// Export de compatibilité pour les anciens imports
-export const createClient = createSupabaseServerClient;
