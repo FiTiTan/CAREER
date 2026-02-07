@@ -100,6 +100,56 @@
       "price": 0,
       "tags": ["maximaliste", "texturé", "bold", "tactile"],
       "idealFor": ["Designers", "Artistes", "Mode"]
+    },
+    {
+      "id": "brutalism",
+      "name": "Brutalism Elevated",
+      "description": "Typographie brute, contrastes forts, grilles cassées",
+      "file": "premium/brutalism/template.html",
+      "category": "premium",
+      "price": 4.99,
+      "tags": ["brutal", "moderne", "design", "architecte"],
+      "idealFor": ["Designers", "Architectes", "Artistes"]
+    },
+    {
+      "id": "retro-revival",
+      "name": "Retro Revival",
+      "description": "Style vintage modernisé années 70-80, couleurs chaudes, grain photo",
+      "file": "premium/retro-revival/template.html",
+      "category": "premium",
+      "price": 4.99,
+      "tags": ["vintage", "retro", "70s", "80s", "photographe"],
+      "idealFor": ["Photographes", "Créatifs", "Artisans"]
+    },
+    {
+      "id": "museumcore",
+      "name": "Museumcore",
+      "description": "Style galerie d'art épuré, beaucoup d'espace blanc, typographie serif élégante",
+      "file": "premium/museumcore/template.html",
+      "category": "premium",
+      "price": 4.99,
+      "tags": ["minimaliste", "élégant", "art", "luxe", "galerie"],
+      "idealFor": ["Artistes", "Galeristes", "Luxe"]
+    },
+    {
+      "id": "dark-developer",
+      "name": "Dark Developer",
+      "description": "Mode sombre type terminal/IDE, accent vert néon ou cyan, police monospace",
+      "file": "premium/dark-developer/template.html",
+      "category": "premium",
+      "price": 4.99,
+      "tags": ["dark", "developer", "tech", "terminal", "code"],
+      "idealFor": ["Développeurs", "Tech", "Open Source"]
+    },
+    {
+      "id": "elegant-consultant",
+      "name": "Elegant Consultant",
+      "description": "Style corporate premium, bleu marine + or/doré, typographie classique raffinée",
+      "file": "premium/elegant-consultant/template.html",
+      "category": "premium",
+      "price": 4.99,
+      "tags": ["corporate", "luxe", "elegant", "professionnel", "consultant"],
+      "idealFor": ["Avocats", "Consultants", "Finance"]
     }
   ]
 }

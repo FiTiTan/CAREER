@@ -1,0 +1,15 @@
+{
+  "id": "brutalism",
+  "name": "Brutalism Elevated",
+  "description": "Typographie brute, contrastes forts, grilles cassées",
+  "category": "premium",
+  "price": 4.99,
+  "version": "1.0.0",
+  "author": "CareerCare",
+  "tags": ["brutal", "moderne", "design", "architecte"],
+  "idealFor": ["Designers", "Architectes", "Artistes"],
+  "sections": {
+    "obligatoires": ["hero", "about", "services", "contact"],
+    "optionnelles": ["projects"]
+  }
+}

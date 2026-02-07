@@ -91,6 +91,11 @@ export interface PortfolioFormData {
   expertises: string[];        // 3 spécialités
   tagline: string;             // Slogan / Accroche
   differentiation: string;     // Ce qui différencie
+  
+  // Détection IA du secteur
+  detectedSector?: string;
+  sectorConfidence?: number;
+  sectorTips?: string[];
 
   // Step 2: Offre
   services: string[];
@@ -212,6 +217,33 @@ export interface ProfileContextDetection {
 }
 
 /**
+ * Détection IA du secteur (via DeepSeek)
+ */
+export interface SectorDetection {
+  sector: string;
+  subCategory: string;
+  confidence: number;
+  suggestedLabels: {
+    services?: string;
+    projects?: string;
+  };
+  tips: string[];
+}
+
+/**
+ * Requête de détection de secteur
+ */
+export interface DetectSectorRequest {
+  profileType: 'person' | 'place';
+  title?: string;
+  placeName?: string;
+  placeType?: string;
+  address?: string;
+  socialLinks?: string[];
+  tagline?: string;
+}
+
+/**
  * Labels dynamiques selon le contexte
  */
 export interface PortfolioLabels {
@@ -311,6 +343,9 @@ export const initialPortfolioFormData: PortfolioFormData = {
   expertises: ['', '', ''],
   tagline: '',
   differentiation: '',
+  detectedSector: undefined,
+  sectorConfidence: undefined,
+  sectorTips: undefined,
   services: ['', '', ''],
   valueProp: '',
   email: '',

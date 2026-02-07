@@ -9,6 +9,8 @@ import type {
   ProfileContext,
   EnrichmentRequest,
   EnrichmentResponse,
+  SectorDetection,
+  DetectSectorRequest,
 } from './types';
 import { getLabelsForContext } from './labels';
 
@@ -238,4 +240,43 @@ export const fallbackEnrichment = (
     })),
     socialIsMain: formData.socialLinks.length > 3,
   };
+};
+
+/**
+ * Détection IA du secteur via DeepSeek
+ * Appelé au clic sur "Suivant" du Step1 pour détection automatique
+ */
+export const detectSector = async (
+  formData: PortfolioFormData
+): Promise<SectorDetection | null> => {
+  try {
+    const requestBody: DetectSectorRequest = {
+      profileType: formData.profileType || 'person',
+      title: formData.title,
+      placeName: formData.profileType === 'place' ? formData.name : undefined,
+      placeType: formData.profileType === 'place' ? formData.title : undefined,
+      address: formData.address || undefined,
+      socialLinks: formData.socialLinks.map(link => link.platform),
+      tagline: formData.tagline || undefined,
+    };
+
+    const response = await fetch('/api/portfolio/detect-sector', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody),
+    });
+
+    if (!response.ok) {
+      console.error('[detectSector] API error:', response.status);
+      return null;
+    }
+
+    const result: SectorDetection = await response.json();
+    return result;
+  } catch (error) {
+    console.error('[detectSector] Error:', error);
+    return null;
+  }
 };
