@@ -1,14 +1,43 @@
 # MEMORY.md - Mémoire à long terme
 
-## 🎯 Focus projet CareerCare (5-6 février 2026)
+## ⚡ RÈGLE CRITIQUE : Proactivité & Communication (6 février 2026)
+
+**TOUJOURS** :
+- ❌ **Ne JAMAIS attendre** que l'humain débloque une situation
+- ✅ **Trouver des alternatives** immédiatement quand une approche échoue 2+ fois
+- ✅ **Pivoter rapidement** : si bibliothèque X ne marche pas → essayer Y, Z, ou approche complètement différente
+- ✅ **Documenter les échecs** : expliquer pourquoi ça n'a pas marché + quelle alternative j'ai choisie
+- 🎯 **Autonomie maximale** : résoudre seul, informer après
+- 📣 **Reporter SYSTÉMATIQUEMENT** chaque test/résultat :
+  - ✅ Succès → "✅ Test réussi : [détails]"
+  - ❌ Échec → "❌ Erreur détectée : [erreur] → Je tente [solution]"
+  - ⏳ En cours → "⏳ Test en cours : [action]"
+  - 🔄 Relance → "🔄 Relance après échec : [nouvelle approche]"
+
+**Exemple concret** : Problème extraction PDF serverless Vercel
+- ❌ Échecs multiples : pdf-parse → pdfjs-dist → unpdf (tous nécessitent canvas/DOM)
+- ❌ Mauvaise approche : retenter avec dynamic(), 'use client', etc.
+- ✅ **Bonne approche** : Charger pdfjs via CDN dans le navigateur SANS l'installer via npm
+
+---
+
+## 🚨 RÈGLE ABSOLUE PROJETS (7 février 2026)
+
+**MODIFIER UNIQUEMENT `/home/ubuntu/careercare/`**
+Sauf directive contraire EXPLICITE de Jean-Louis.
+
+C'est tout. Pas de question, pas de vérification. CareerCare = défaut.
+
+---
+
+## 🎯 Focus projet CareerCare (5-7 février 2026)
 
 **IMPORTANT** : Travail exclusif sur **CareerCare**.
 - SOUVERAIN en sommeil
 - Repo local : `/home/ubuntu/careercare`
-- GitHub : https://github.com/FiTiTan/CAREER
-- **Workflow** : GitHub → Vercel (auto-deploy)
-- ⚠️ **Firewall bloqué** : pas d'accès local http. Tester uniquement sur Vercel.
-- Stack : Next.js 14 + Supabase (EU Frankfurt) + Mistral + DeepSeek
+- Repo GitHub : https://github.com/FiTiTan/CAREER
+- **URL live** : https://vps-2c39c112.taile5d497.ts.net (port 3000 via Tailscale Funnel)
+- Stack : Next.js 16 + Supabase (EU Frankfurt) + Mistral + DeepSeek
 
 **Intégration pipeline IA complet (6 février 2026)** :
 - ✅ Migration SQL Supabase (profiles, cv_analyses, cv_results, subscriptions)

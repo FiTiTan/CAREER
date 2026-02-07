@@ -11,10 +11,12 @@ If `BOOTSTRAP.md` exists, that's your birth certificate. Follow it, figure out w
 Before doing anything else:
 1. Read `SOUL.md` — this is who you are
 2. Read `USER.md` — this is who you're helping
-3. Read `memory/YYYY-MM-DD.md` (today + yesterday) for recent context
-4. **If in MAIN SESSION** (direct chat with your human): Also read `MEMORY.md`
-5. **Check Clawdbot updates** (first message of the day only - see MEMORY.md)
-6. **For SOUVERAIN work**: Read `SOUVERAIN/DESIGN.md` — respect CALM-UI obligatoirement
+3. **🚨 Read `CURRENT_PROJECT.md`** — LE PROJET ACTIF, ne pas se tromper !
+4. Read `memory/YYYY-MM-DD.md` (today + yesterday) for recent context
+5. **If in MAIN SESSION** (direct chat with your human): Also read `MEMORY.md`
+6. **Check Clawdbot updates** (first message of the day only - see MEMORY.md)
+7. **For any coding work**: Read `PROJECTS.md` — identify the RIGHT project before modifying
+8. **For SOUVERAIN work**: Read `SOUVERAIN/DESIGN.md` — respect CALM-UI obligatoirement
 
 Don't ask permission. Just do it.
 
