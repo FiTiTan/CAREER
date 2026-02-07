@@ -2,15 +2,22 @@ import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-12-18.acacia',
-});
+// Lazy initialization to avoid build-time errors
+let stripe: Stripe | null = null;
+function getStripe() {
+  if (!stripe) {
+    stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+      apiVersion: '2026-01-28.clover',
+    });
+  }
+  return stripe;
+}
 
 const PRICE_IDS = {
-  pro_monthly: process.env.STRIPE_PRICE_PRO_MONTHLY!,
-  pro_yearly: process.env.STRIPE_PRICE_PRO_YEARLY!,
-  business_monthly: process.env.STRIPE_PRICE_BUSINESS_MONTHLY!,
-  business_yearly: process.env.STRIPE_PRICE_BUSINESS_YEARLY!,
+  pro_monthly: process.env.STRIPE_PRICE_PRO_MONTHLY,
+  pro_yearly: process.env.STRIPE_PRICE_PRO_YEARLY,
+  business_monthly: process.env.STRIPE_PRICE_BUSINESS_MONTHLY,
+  business_yearly: process.env.STRIPE_PRICE_BUSINESS_YEARLY,
 };
 
 export async function POST(request: Request) {
@@ -23,6 +30,7 @@ export async function POST(request: Request) {
 
   try {
     const { priceId, plan, interval } = await request.json();
+    const stripeClient = getStripe();
 
     // Get or create Stripe customer
     let customerId: string;
@@ -35,7 +43,7 @@ export async function POST(request: Request) {
     if (profile?.stripe_customer_id) {
       customerId = profile.stripe_customer_id;
     } else {
-      const customer = await stripe.customers.create({
+      const customer = await stripeClient.customers.create({
         email: user.email,
         metadata: { supabase_user_id: user.id },
       });
@@ -48,7 +56,7 @@ export async function POST(request: Request) {
     }
 
     // Create checkout session
-    const session = await stripe.checkout.sessions.create({
+    const session = await stripeClient.checkout.sessions.create({
       customer: customerId,
       line_items: [
         {
