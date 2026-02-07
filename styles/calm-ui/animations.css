@@ -1,0 +1,256 @@
+/* CALM-UI Animations — CareerCare */
+
+/* Score Ring Animation */
+@keyframes score-ring-fill {
+  from {
+    stroke-dashoffset: 283; /* 2 * PI * 45 */
+  }
+  to {
+    stroke-dashoffset: var(--score-offset);
+  }
+}
+
+@keyframes score-number-count {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.score-ring-animated {
+  animation: score-ring-fill 1.5s ease-out forwards;
+}
+
+.score-number-animated {
+  animation: score-number-count 0.5s ease-out 1s forwards;
+  opacity: 0;
+}
+
+/* Orb Animation (IA Processing) */
+@keyframes orb-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+}
+
+@keyframes orb-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes orb-glow {
+  0%, 100% {
+    box-shadow: 
+      0 0 20px var(--calm-primary-muted),
+      0 0 40px var(--calm-primary-light);
+  }
+  50% {
+    box-shadow: 
+      0 0 30px var(--calm-primary-muted),
+      0 0 60px var(--calm-primary-light);
+  }
+}
+
+.orb-container {
+  position: relative;
+  width: 120px;
+  height: 120px;
+}
+
+.orb-core {
+  position: absolute;
+  inset: 20px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--calm-primary), var(--calm-accent));
+  animation: orb-pulse 2s ease-in-out infinite, orb-glow 2s ease-in-out infinite;
+}
+
+.orb-ring {
+  position: absolute;
+  inset: 0;
+  border: 2px solid transparent;
+  border-top-color: var(--calm-primary);
+  border-radius: 50%;
+  animation: orb-rotate 1.5s linear infinite;
+}
+
+.orb-ring-2 {
+  inset: 8px;
+  animation-duration: 2s;
+  animation-direction: reverse;
+  border-top-color: var(--calm-accent);
+}
+
+/* Pillar Gauge Animation */
+@keyframes gauge-fill {
+  from {
+    width: 0%;
+  }
+  to {
+    width: var(--gauge-value);
+  }
+}
+
+.gauge-bar-animated {
+  animation: gauge-fill 1s ease-out forwards;
+}
+
+/* Fade In */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in-down {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in var(--calm-transition-normal) ease-out;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up var(--calm-transition-slow) ease-out;
+}
+
+.animate-fade-in-down {
+  animation: fade-in-down var(--calm-transition-slow) ease-out;
+}
+
+/* Slide In */
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-in-left {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-in-bottom {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right var(--calm-transition-slow) ease-out;
+}
+
+.animate-slide-in-left {
+  animation: slide-in-left var(--calm-transition-slow) ease-out;
+}
+
+.animate-slide-in-bottom {
+  animation: slide-in-bottom var(--calm-transition-slow) ease-out;
+}
+
+/* Skeleton Loading */
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--calm-bg-hover) 25%,
+    var(--calm-bg-active) 50%,
+    var(--calm-bg-hover) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+/* Spin */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Bounce */
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-bounce {
+  animation: bounce 1s ease-in-out infinite;
+}
+
+/* Notification Badge Pulse */
+@keyframes badge-pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.badge-pulse {
+  animation: badge-pulse 2s ease-in-out infinite;
+}

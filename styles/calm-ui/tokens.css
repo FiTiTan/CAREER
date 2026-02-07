@@ -1,0 +1,123 @@
+/* CALM-UI Design Tokens — CareerCare */
+
+:root {
+  /* Primary Colors */
+  --calm-primary: #00d4aa;
+  --calm-primary-hover: #00b894;
+  --calm-primary-light: rgba(0, 212, 170, 0.1);
+  --calm-primary-muted: rgba(0, 212, 170, 0.3);
+
+  /* Secondary Colors */
+  --calm-secondary: #4f8fff;
+  --calm-secondary-hover: #3a7be8;
+  --calm-secondary-light: rgba(79, 143, 255, 0.1);
+
+  /* Accent Colors */
+  --calm-accent: #8b5cf6;
+  --calm-accent-hover: #7c3aed;
+
+  /* Background Colors */
+  --calm-bg: #06070b;
+  --calm-bg-elevated: #0d0f14;
+  --calm-bg-card: #12141a;
+  --calm-bg-hover: #1a1d24;
+  --calm-bg-active: #22262f;
+
+  /* Text Colors */
+  --calm-text: #ffffff;
+  --calm-text-secondary: #a1a1aa;
+  --calm-text-muted: #71717a;
+  --calm-text-disabled: #52525b;
+
+  /* Border Colors */
+  --calm-border: #27272a;
+  --calm-border-hover: #3f3f46;
+  --calm-border-focus: var(--calm-primary);
+
+  /* Status Colors */
+  --calm-success: #22c55e;
+  --calm-warning: #f59e0b;
+  --calm-error: #ef4444;
+  --calm-info: #3b82f6;
+
+  /* Pillar Colors */
+  --calm-pillar-documents: #4f8fff;
+  --calm-pillar-visibility: #8b5cf6;
+  --calm-pillar-network: #0a66c2;
+  --calm-pillar-dynamique: #06d6a0;
+  --calm-pillar-organisation: #ff8c42;
+  --calm-pillar-presence: #f472b6;
+
+  /* Shadows */
+  --calm-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --calm-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+  --calm-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.3);
+  --calm-shadow-glow: 0 0 20px rgba(0, 212, 170, 0.3);
+
+  /* Spacing */
+  --calm-space-xs: 0.25rem;
+  --calm-space-sm: 0.5rem;
+  --calm-space-md: 1rem;
+  --calm-space-lg: 1.5rem;
+  --calm-space-xl: 2rem;
+  --calm-space-2xl: 3rem;
+
+  /* Border Radius */
+  --calm-radius-sm: 0.375rem;
+  --calm-radius-md: 0.5rem;
+  --calm-radius-lg: 0.75rem;
+  --calm-radius-xl: 1rem;
+  --calm-radius-full: 9999px;
+
+  /* Typography */
+  --calm-font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --calm-font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  /* Font Sizes */
+  --calm-text-xs: 0.75rem;
+  --calm-text-sm: 0.875rem;
+  --calm-text-base: 1rem;
+  --calm-text-lg: 1.125rem;
+  --calm-text-xl: 1.25rem;
+  --calm-text-2xl: 1.5rem;
+  --calm-text-3xl: 1.875rem;
+  --calm-text-4xl: 2.25rem;
+  --calm-text-5xl: 3rem;
+
+  /* Line Heights */
+  --calm-leading-tight: 1.25;
+  --calm-leading-normal: 1.5;
+  --calm-leading-relaxed: 1.75;
+
+  /* Transitions */
+  --calm-transition-fast: 150ms ease;
+  --calm-transition-normal: 200ms ease;
+  --calm-transition-slow: 300ms ease;
+
+  /* Z-Index */
+  --calm-z-dropdown: 50;
+  --calm-z-sticky: 100;
+  --calm-z-modal: 200;
+  --calm-z-toast: 300;
+  --calm-z-tooltip: 400;
+
+  /* Layout */
+  --calm-sidebar-width: 240px;
+  --calm-sidebar-collapsed: 64px;
+  --calm-topbar-height: 64px;
+  --calm-bottom-nav-height: 64px;
+}
+
+/* Light mode (optionnel) */
+[data-theme="light"] {
+  --calm-bg: #ffffff;
+  --calm-bg-elevated: #f4f4f5;
+  --calm-bg-card: #fafafa;
+  --calm-bg-hover: #f1f1f1;
+  --calm-bg-active: #e4e4e7;
+  --calm-text: #18181b;
+  --calm-text-secondary: #52525b;
+  --calm-text-muted: #71717a;
+  --calm-border: #e4e4e7;
+  --calm-border-hover: #d4d4d8;
+}
