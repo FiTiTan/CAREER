@@ -34,3 +34,24 @@ Skills are shared. Your setup is yours. Keeping them apart means you can update 
 ---
 
 Add whatever helps you do your job. This is your cheat sheet.
+
+---
+
+## CareerCare - Workflow Déploiement
+
+**Repo:** https://github.com/FiTiTan/CAREER
+- `main` = code CareerCare
+- `master` = workspace agent (mémoire)
+
+**VPS Test:** https://vps-2c39c112.taile5d497.ts.net/
+
+**Commandes:**
+```bash
+# Commit + Push (backup)
+git add -A && git commit -m "..." && git push
+
+# Build + Deploy
+npm run build && pm2 restart careercare
+```
+
+**Process pm2:** `careercare`
