@@ -176,20 +176,23 @@ function SidebarItem({
     <Link
       href={href}
       className={`
-        flex items-center gap-3 px-3 py-2.5 rounded-lg
-        transition-colors duration-150
+        flex items-center transition-all duration-150
+        ${collapsed 
+          ? 'w-10 h-10 justify-center rounded-full mx-auto' 
+          : 'gap-3 px-3 py-2.5 rounded-full'
+        }
         ${active
           ? 'bg-[rgba(0,212,170,0.1)] text-[var(--calm-primary)]'
           : 'text-[var(--calm-text-secondary)] hover:bg-[var(--calm-bg-hover)] hover:text-white'
         }
       `}
     >
-      {/* Icône dans cercle arrondi */}
+      {/* Icône dans cercle arrondi - only show bg when not active and expanded */}
       <div
-        className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
-        style={{ backgroundColor: `${color}15` }}
+        className={`flex items-center justify-center flex-shrink-0 ${collapsed ? '' : 'w-8 h-8 rounded-full'}`}
+        style={{ backgroundColor: collapsed ? 'transparent' : `${color}15` }}
       >
-        <Icon size={16} style={{ color }} />
+        <Icon size={collapsed ? 18 : 16} style={{ color }} />
       </div>
       {!collapsed && (
         <span className="text-sm font-medium">{label}</span>
