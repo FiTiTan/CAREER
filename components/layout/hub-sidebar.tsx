@@ -7,7 +7,7 @@ import { useSubscription } from '@/lib/hooks/use-subscription';
 import { useSidebar } from '@/lib/contexts/sidebar-context';
 import { ModuleIcon, MODULE_COLORS } from '@/components/ui/module-icon';
 import {
-  Diamond,
+  Star,
   FileText,
   Palette,
   Target,
@@ -78,7 +78,7 @@ export function HubSidebar() {
         {/* CareerScore - Item isolé */}
         <SidebarItem
           href="/hub"
-          Icon={Diamond}
+          Icon={Star}
           module="score"
           label="CareerScore"
           active={isActive('/hub')}
@@ -181,6 +181,9 @@ function SidebarItem({
   // Couleur du texte : couleur du module si actif ou hover, sinon gris
   const textColor = (active || hovered) ? color : 'var(--calm-text-secondary)';
 
+  // Background couleur du module avec opacité
+  const activeBg = active ? `${color}15` : undefined;
+
   return (
     <Link
       href={href}
@@ -191,11 +194,9 @@ function SidebarItem({
           ? 'w-10 justify-center mx-auto' 
           : 'px-3 w-full'
         }
-        ${active
-          ? 'bg-[rgba(0,212,170,0.1)]'
-          : 'hover:bg-[var(--calm-bg-hover)]'
-        }
+        ${!active ? 'hover:bg-[var(--calm-bg-hover)]' : ''}
       `}
+      style={{ backgroundColor: activeBg }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >

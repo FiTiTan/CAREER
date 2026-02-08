@@ -49,7 +49,7 @@ export const MODULE_ICONS: Record<string, LucideIcon> = {
 
 // Couleurs par module (hex)
 export const MODULE_COLORS: Record<string, string> = {
-  score: '#00d4aa',
+  score: '#fbbf24',
   documents: '#4f8fff',
   'cv-coach': '#4f8fff',
   visibility: '#8b5cf6',
