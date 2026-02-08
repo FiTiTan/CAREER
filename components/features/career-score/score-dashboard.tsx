@@ -38,7 +38,7 @@ export function ScoreDashboard({ score }: ScoreDashboardProps) {
   return (
     <div className="space-y-6">
       {/* Hero Section - Score Ring */}
-      <div className="bg-[var(--calm-bg-card)] border border-[var(--calm-border)] rounded-[14px] p-6 flex flex-col lg:flex-row items-center gap-6 lg:gap-12 transition-all hover:border-[var(--calm-border-hover)]">
+      <div className="flex flex-col lg:flex-row items-center gap-6 lg:gap-12 overflow-visible">
         <div className="flex-shrink-0">
           <ScoreRing
             score={score.total}
@@ -148,7 +148,7 @@ function ActionCard({ action }: { action: RecommendedAction }) {
   return (
     <Link
       href={action.module_route}
-      className="block p-4 rounded-xl bg-[rgba(0,212,170,0.04)] border-l-[3px] border-l-[var(--calm-primary)] border border-[var(--calm-border)] hover:border-[var(--calm-border-hover)] transition-colors"
+      className="block p-4 rounded-xl bg-[var(--calm-bg-card)] border border-[var(--calm-border)] hover:border-[var(--calm-border-hover)] transition-colors"
     >
       <div className="flex items-start gap-3">
         <div

@@ -75,8 +75,8 @@ export function ScoreRing({
 
   return (
     <div
-      className={`relative inline-flex items-center justify-center ${className}`}
-      style={{ width: config.diameter, height: config.diameter }}
+      className={`relative inline-flex items-center justify-center overflow-visible ${className}`}
+      style={{ width: config.diameter + 20, height: config.diameter + 20, padding: 10 }}
     >
       <svg
         width={config.diameter}
