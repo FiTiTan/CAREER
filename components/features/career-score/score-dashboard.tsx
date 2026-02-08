@@ -69,7 +69,7 @@ export function ScoreDashboard({ score }: ScoreDashboardProps) {
             <Link
               key={key}
               href={config.route}
-              className="bg-[var(--calm-bg-card)] border border-[var(--calm-border)] rounded-[14px] p-5 transition-all hover:border-[var(--calm-border-hover)] hover:-translate-y-0.5 hover:shadow-lg dark:hover:shadow-[0_4px_20px_rgba(0,0,0,0.3)] group"
+              className="bg-[var(--calm-bg-card)] border border-[var(--calm-border)] rounded-[14px] p-5 transition-all hover:border-[var(--calm-border-hover)] hover:-translate-y-0.5 hover:shadow-sm group"
             >
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
