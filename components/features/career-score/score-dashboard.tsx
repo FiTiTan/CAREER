@@ -152,10 +152,24 @@ function ActionCard({ action }: { action: RecommendedAction }) {
   const config = PILLAR_CONFIG[action.pillar];
   const Icon = PILLAR_ICONS[action.pillar];
 
+  // Mapping action → label bouton
+  const ctaLabels: Record<string, string> = {
+    '/hub/linkedin/import': 'Importer maintenant',
+    '/hub/cv-coach/new': 'Analyser mon CV',
+    '/hub/portfolio/wizard': 'Créer mon portfolio',
+    '/hub/e-reputation/scan': 'Lancer un scan',
+    '/hub/job-match/preferences': 'Définir mes critères',
+    '/hub/vault': 'Ajouter des fichiers',
+  };
+  const ctaLabel = ctaLabels[action.module_route] || 'Commencer';
+
   return (
-    <Link
-      href={action.module_route}
-      className="block p-4 rounded-xl bg-[var(--calm-bg-card)] border border-[var(--calm-border)] hover:border-[var(--calm-border-hover)] transition-colors"
+    <div 
+      className="p-5 rounded-xl border border-[var(--calm-border)]"
+      style={{
+        borderLeft: `3px solid ${config.color}`,
+        background: `${config.color}08`,
+      }}
     >
       <div className="flex items-start gap-3">
         <div
@@ -169,14 +183,28 @@ function ActionCard({ action }: { action: RecommendedAction }) {
             <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${getPriorityBadgeClass(action.priority)}`}>
               {action.priority === 'high' ? 'Prioritaire' : action.priority === 'medium' ? 'Recommandé' : 'Optionnel'}
             </span>
-            <span className="text-sm text-[var(--calm-primary)]">+{action.potential_gain} pts</span>
+            <span className="text-sm font-semibold" style={{ color: config.color }}>
+              +{action.potential_gain} pts
+            </span>
           </div>
-          <h4 className="font-medium mb-0.5">{action.title}</h4>
-          <p className="text-sm text-[var(--calm-text-secondary)] line-clamp-2">{action.description}</p>
+          <h4 className="font-semibold mb-1">{action.title}</h4>
+          <p className="text-sm text-[var(--calm-text-secondary)] mb-4">{action.description}</p>
+          
+          {/* CTA Button */}
+          <Link
+            href={action.module_route}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium text-white transition-all hover:-translate-y-0.5"
+            style={{
+              background: config.color,
+              boxShadow: `0 2px 8px ${config.color}40`,
+            }}
+          >
+            {ctaLabel}
+            <span>→</span>
+          </Link>
         </div>
-        <span className="text-[var(--calm-text-muted)]">→</span>
       </div>
-    </Link>
+    </div>
   );
 }
 
