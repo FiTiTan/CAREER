@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { ScoreRing } from '@/components/ui/score-ring';
+import { ScoreSparkline } from '@/components/ui/score-sparkline';
 import { TrendIcon, MODULE_COLORS } from '@/components/ui/module-icon';
 import { PILLAR_CONFIG, PillarKey, CareerScore, RecommendedAction } from '@/types/score';
 import {
@@ -35,7 +36,7 @@ export function ScoreDashboard({ score }: ScoreDashboardProps) {
     <div className="space-y-6">
       {/* Hero Section - Score Ring */}
       <div className="flex flex-col lg:flex-row items-center gap-6 lg:gap-12 overflow-visible">
-        <div className="flex-shrink-0">
+        <div className="flex-shrink-0 flex flex-col items-center gap-4">
           <ScoreRing
             total={score.total}
             pillars={{
@@ -47,6 +48,11 @@ export function ScoreDashboard({ score }: ScoreDashboardProps) {
               presence: score.pillars.presence.value,
             }}
             size={180}
+          />
+          {/* Sparkline progression 30j */}
+          <ScoreSparkline 
+            data={getScoreHistory()} 
+            color="#00d4aa"
           />
         </div>
         <div className="flex-1 text-center lg:text-left">
@@ -218,4 +224,10 @@ function getPillarStat(pillarKey: string): string {
     presence: 'Dernier scan: il y a 3j',
   };
   return stats[pillarKey] || '';
+}
+
+function getScoreHistory(): number[] {
+  // Données simulées pour 30 jours - à connecter à l'API plus tard
+  // Progression de 59 à 67 avec variations
+  return [59, 59, 60, 61, 60, 62, 63, 62, 64, 63, 65, 64, 66, 65, 64, 66, 65, 67, 66, 68, 67, 66, 68, 67, 69, 68, 67, 68, 67, 67];
 }
