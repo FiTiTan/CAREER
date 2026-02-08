@@ -89,7 +89,7 @@ export function HubSidebar() {
         <div className="my-3 border-t border-[var(--calm-border)]" />
 
         {/* Groupe OUTILS */}
-        {!collapsed && <SidebarGroupLabel>OUTILS</SidebarGroupLabel>}
+        <SidebarGroupLabel collapsed={collapsed}>OUTILS</SidebarGroupLabel>
         <ul className="space-y-1">
           {toolsNav.map((item) => (
             <li key={item.href}>
@@ -106,7 +106,7 @@ export function HubSidebar() {
         </ul>
 
         {/* Groupe PLUS */}
-        {!collapsed && <SidebarGroupLabel className="mt-4">PLUS</SidebarGroupLabel>}
+        <SidebarGroupLabel className="mt-4" collapsed={collapsed}>PLUS</SidebarGroupLabel>
         <ul className="space-y-1">
           {plusNav.map((item) => (
             <li key={item.href}>
@@ -135,16 +135,20 @@ export function HubSidebar() {
 // Composant Label de groupe
 function SidebarGroupLabel({ 
   children, 
-  className = '' 
+  className = '',
+  collapsed = false
 }: { 
   children: React.ReactNode; 
   className?: string;
+  collapsed?: boolean;
 }) {
   return (
     <div
       className={`
         px-3 py-2 text-[10px] font-semibold uppercase tracking-[2px]
         text-[var(--calm-text-muted)]
+        transition-opacity duration-300
+        ${collapsed ? 'opacity-0' : 'opacity-100'}
         ${className}
       `}
     >
