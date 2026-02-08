@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { ScoreRing } from '@/components/ui/score-ring';
-import { PillarGauge } from '@/components/ui/pillar-gauge';
 import { TrendIcon, MODULE_COLORS } from '@/components/ui/module-icon';
 import { PILLAR_CONFIG, PillarKey, CareerScore, RecommendedAction } from '@/types/score';
 import {
@@ -12,9 +11,6 @@ import {
   Linkedin,
   Lock,
   Globe,
-  Zap,
-  BarChart3,
-  TrendingUp,
   LucideIcon,
 } from 'lucide-react';
 
@@ -71,6 +67,7 @@ export function ScoreDashboard({ score }: ScoreDashboardProps) {
         {pillars.map(([key, config]) => {
           const pillarScore = score.pillars[key];
           const Icon = PILLAR_ICONS[key];
+          const stat = getPillarStat(key);
           
           return (
             <Link
@@ -78,7 +75,7 @@ export function ScoreDashboard({ score }: ScoreDashboardProps) {
               href={config.route}
               className="bg-[var(--calm-bg-card)] border border-[var(--calm-border)] rounded-[14px] p-5 transition-all hover:border-[var(--calm-border-hover)] hover:-translate-y-0.5 hover:shadow-sm group"
             >
-              <div className="flex items-start justify-between mb-4">
+              <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3">
                   {/* Icône SVG dans cercle arrondi */}
                   <div
@@ -93,55 +90,32 @@ export function ScoreDashboard({ score }: ScoreDashboardProps) {
                   </div>
                 </div>
                 <span
-                  className="text-xl font-bold"
+                  className="text-2xl font-bold"
                   style={{ color: config.color }}
                 >
                   {pillarScore.value}
                 </span>
               </div>
-              <PillarGauge
-                pillar={key}
-                value={pillarScore.value}
-                showLabel={false}
-              />
-              <div className="mt-3 flex items-center justify-between text-sm">
-                <span className="text-[var(--calm-text-muted)]">
-                  Poids: {Math.round(pillarScore.weight * 100)}%
-                </span>
+              
+              {/* Progress bar + trend */}
+              <div className="flex items-center gap-2 mb-3">
+                <div className="flex-1 h-1.5 rounded-full bg-[var(--calm-border)]">
+                  <div 
+                    className="h-full rounded-full transition-all duration-700"
+                    style={{ width: `${pillarScore.value}%`, background: config.color }}
+                  />
+                </div>
                 <TrendIcon trend={pillarScore.trend} />
+              </div>
+              
+              {/* Stat + poids */}
+              <div className="flex items-center justify-between text-xs text-[var(--calm-text-muted)]">
+                <span>{stat}</span>
+                <span>Poids: {Math.round(pillarScore.weight * 100)}%</span>
               </div>
             </Link>
           );
         })}
-      </div>
-
-      {/* Quick Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard
-          Icon={FileText}
-          color={MODULE_COLORS['cv-coach']}
-          label="CV analysés"
-          value="3"
-        />
-        <StatCard
-          Icon={Target}
-          color={MODULE_COLORS['job-match']}
-          label="Offres matchées"
-          value="12"
-        />
-        <StatCard
-          Icon={BarChart3}
-          color={MODULE_COLORS['portfolio']}
-          label="Candidatures"
-          value="5"
-        />
-        <StatCard
-          Icon={TrendingUp}
-          color="#00d4aa"
-          label="Progression"
-          value="+8%"
-          positive
-        />
       </div>
     </div>
   );
@@ -208,40 +182,6 @@ function ActionCard({ action }: { action: RecommendedAction }) {
   );
 }
 
-// Stat Card Component
-function StatCard({
-  Icon,
-  color,
-  label,
-  value,
-  positive,
-}: {
-  Icon: LucideIcon;
-  color: string;
-  label: string;
-  value: string;
-  positive?: boolean;
-}) {
-  return (
-    <div className="bg-[var(--calm-bg-card)] border border-[var(--calm-border)] rounded-[14px] p-4 transition-all hover:border-[var(--calm-border-hover)]">
-      <div className="flex items-center gap-3">
-        <div
-          className="w-10 h-10 rounded-full flex items-center justify-center"
-          style={{ backgroundColor: `${color}15` }}
-        >
-          <Icon size={20} style={{ color }} />
-        </div>
-        <div>
-          <p className="text-sm text-[var(--calm-text-muted)]">{label}</p>
-          <p className={`text-xl font-bold ${positive ? 'text-[var(--calm-success)]' : ''}`}>
-            {value}
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // Helper functions
 function getScoreMessage(score: number): string {
   if (score >= 80) return 'Excellent ! Votre profil professionnel est optimisé.';
@@ -265,4 +205,17 @@ function getPriorityBadgeClass(priority: 'high' | 'medium' | 'low'): string {
     : priority === 'medium'
     ? 'bg-[rgba(245,158,11,0.15)] text-[var(--calm-warning)]'
     : 'bg-[var(--calm-primary-light)] text-[var(--calm-primary)]';
+}
+
+function getPillarStat(pillarKey: string): string {
+  // Stats statiques pour le moment - à connecter à l'API plus tard
+  const stats: Record<string, string> = {
+    documents: '3 CV analysés',
+    visibility: '1 portfolio publié',
+    network: 'Profil non importé',
+    dynamique: '12 offres · 5 candidatures',
+    organisation: '0 fichiers',
+    presence: 'Dernier scan: il y a 3j',
+  };
+  return stats[pillarKey] || '';
 }
