@@ -5,7 +5,9 @@ import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { useSubscription } from '@/lib/hooks/use-subscription';
 import { useSidebar } from '@/lib/contexts/sidebar-context';
+import { useCareerScore } from '@/lib/hooks/use-career-score';
 import { ModuleIcon, MODULE_COLORS } from '@/components/ui/module-icon';
+import type { PillarKey } from '@/types/score';
 import {
   Diamond,
   Star,
@@ -22,14 +24,14 @@ import {
   LucideIcon,
 } from 'lucide-react';
 
-// Navigation items avec icônes Lucide
-const toolsNav = [
-  { href: '/hub/cv-coach', label: 'CV Coach', icon: FileText, module: 'cv-coach' },
-  { href: '/hub/portfolio', label: 'Portfolio', icon: Palette, module: 'portfolio' },
-  { href: '/hub/job-match', label: 'Job Match', icon: Target, module: 'job-match' },
-  { href: '/hub/linkedin', label: 'LinkedIn', icon: Linkedin, module: 'linkedin' },
-  { href: '/hub/vault', label: 'Coffre-Fort', icon: Lock, module: 'vault' },
-  { href: '/hub/e-reputation', label: 'E-Réputation', icon: Globe, module: 'e-reputation' },
+// Navigation items avec icônes Lucide + mapping pilier
+const toolsNav: { href: string; label: string; icon: LucideIcon; module: string; pillar: PillarKey }[] = [
+  { href: '/hub/cv-coach', label: 'CV Coach', icon: FileText, module: 'cv-coach', pillar: 'documents' },
+  { href: '/hub/portfolio', label: 'Portfolio', icon: Palette, module: 'portfolio', pillar: 'visibility' },
+  { href: '/hub/job-match', label: 'Job Match', icon: Target, module: 'job-match', pillar: 'dynamique' },
+  { href: '/hub/linkedin', label: 'LinkedIn', icon: Linkedin, module: 'linkedin', pillar: 'network' },
+  { href: '/hub/vault', label: 'Coffre-Fort', icon: Lock, module: 'vault', pillar: 'organisation' },
+  { href: '/hub/e-reputation', label: 'E-Réputation', icon: Globe, module: 'e-reputation', pillar: 'presence' },
 ];
 
 const plusNav = [
@@ -40,6 +42,7 @@ const plusNav = [
 export function HubSidebar() {
   const pathname = usePathname();
   const { collapsed, toggle } = useSidebar();
+  const score = useCareerScore();
 
   const isActive = (href: string) => {
     if (href === '/hub') return pathname === '/hub';
@@ -92,18 +95,24 @@ export function HubSidebar() {
         {/* Groupe OUTILS */}
         <SidebarGroupLabel collapsed={collapsed}>OUTILS</SidebarGroupLabel>
         <ul className="space-y-1">
-          {toolsNav.map((item) => (
-            <li key={item.href}>
-              <SidebarItem
-                href={item.href}
-                Icon={item.icon}
-                module={item.module}
-                label={item.label}
-                active={isActive(item.href)}
-                collapsed={collapsed}
-              />
-            </li>
-          ))}
+          {toolsNav.map((item) => {
+            const pillarScore = score?.pillars[item.pillar]?.value;
+            const pillarColor = MODULE_COLORS[item.module];
+            return (
+              <li key={item.href}>
+                <SidebarItem
+                  href={item.href}
+                  Icon={item.icon}
+                  module={item.module}
+                  label={item.label}
+                  active={isActive(item.href)}
+                  collapsed={collapsed}
+                  pillarScore={pillarScore}
+                  pillarColor={pillarColor}
+                />
+              </li>
+            );
+          })}
         </ul>
 
         {/* Groupe PLUS */}
@@ -167,6 +176,8 @@ function SidebarItem({
   active,
   collapsed,
   badge,
+  pillarScore,
+  pillarColor,
 }: {
   href: string;
   Icon: LucideIcon;
@@ -175,6 +186,8 @@ function SidebarItem({
   active: boolean;
   collapsed: boolean;
   badge?: number;
+  pillarScore?: number;
+  pillarColor?: string;
 }) {
   const [hovered, setHovered] = useState(false);
   const color = MODULE_COLORS[module] || '#00d4aa';
@@ -186,33 +199,34 @@ function SidebarItem({
   const activeBg = active ? `${color}15` : undefined;
 
   return (
-    <Link
-      href={href}
-      className={`
-        flex items-center h-10 rounded-full
-        transition-all duration-300 ease-in-out
-        ${collapsed 
-          ? 'w-10 justify-center mx-auto' 
-          : 'px-3 w-full'
-        }
-        ${!active ? 'hover:bg-[var(--calm-bg-hover)]' : ''}
-      `}
-      style={{ backgroundColor: activeBg }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
-      {/* Icône */}
-      <div className="w-5 flex-shrink-0 flex items-center justify-center">
-        <Icon size={18} style={{ color }} />
-      </div>
-      
-      {/* Texte - avec transition */}
-      <span 
+    <div className="flex flex-col">
+      <Link
+        href={href}
         className={`
-          text-sm font-medium whitespace-nowrap
+          flex items-center h-10 rounded-full
           transition-all duration-300 ease-in-out
           ${collapsed 
-            ? 'w-0 opacity-0 overflow-hidden' 
+            ? 'w-10 justify-center mx-auto' 
+            : 'px-3 w-full'
+          }
+          ${!active ? 'hover:bg-[var(--calm-bg-hover)]' : ''}
+        `}
+        style={{ backgroundColor: activeBg }}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+      >
+        {/* Icône */}
+        <div className="w-5 flex-shrink-0 flex items-center justify-center">
+          <Icon size={18} style={{ color }} />
+        </div>
+        
+        {/* Texte - avec transition */}
+        <span 
+          className={`
+            text-sm font-medium whitespace-nowrap
+            transition-all duration-300 ease-in-out
+            ${collapsed 
+              ? 'w-0 opacity-0 overflow-hidden' 
             : 'ml-3 opacity-100'
           }
         `}
@@ -221,13 +235,24 @@ function SidebarItem({
         {label}
       </span>
       
-      {/* Badge */}
-      {!collapsed && badge && (
-        <span className="ml-auto text-xs bg-[var(--calm-primary)] text-black px-2 py-0.5 rounded-full">
-          {badge}
-        </span>
+        {/* Badge */}
+        {!collapsed && badge && (
+          <span className="ml-auto text-xs bg-[var(--calm-primary)] text-black px-2 py-0.5 rounded-full">
+            {badge}
+          </span>
+        )}
+      </Link>
+      
+      {/* Micro-barre de progression (seulement si pillarScore défini et non collapsed) */}
+      {pillarScore !== undefined && pillarColor && !collapsed && (
+        <div className="mx-3 mt-0.5 mb-1 h-[3px] rounded-full bg-[var(--calm-border)]">
+          <div
+            className="h-full rounded-full transition-all duration-500"
+            style={{ width: `${pillarScore}%`, background: pillarColor }}
+          />
+        </div>
       )}
-    </Link>
+    </div>
   );
 }
 
