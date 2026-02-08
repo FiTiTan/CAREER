@@ -48,7 +48,7 @@ export function HubSidebar() {
     <aside
       className={`
         hidden lg:flex flex-col h-screen fixed left-0 top-0
-        bg-[var(--calm-bg-elevated)] border-r border-[var(--calm-border)]
+        bg-[var(--calm-bg-elevated)]
         transition-all duration-300
         ${collapsed ? 'w-16' : 'w-60'}
       `}
