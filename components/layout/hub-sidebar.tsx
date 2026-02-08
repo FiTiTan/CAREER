@@ -181,11 +181,8 @@ function SidebarItem({
     <Link
       href={href}
       className={`
-        flex items-center transition-all duration-150
-        ${collapsed 
-          ? 'w-10 h-10 justify-center rounded-full mx-auto' 
-          : 'gap-3 px-3 py-2.5 rounded-full'
-        }
+        flex items-center h-10 px-3 rounded-full
+        transition-all duration-300 ease-in-out
         ${active
           ? 'bg-[rgba(0,212,170,0.1)]'
           : 'hover:bg-[var(--calm-bg-hover)]'
@@ -194,16 +191,27 @@ function SidebarItem({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* Icône SVG seule */}
-      <Icon size={18} style={{ color }} className="flex-shrink-0" />
-      {!collapsed && (
+      {/* Icône - toujours à la même position */}
+      <div className="w-5 flex-shrink-0 flex items-center justify-center">
+        <Icon size={18} style={{ color }} />
+      </div>
+      
+      {/* Texte - avec transition d'opacité et largeur */}
+      <div 
+        className={`
+          overflow-hidden transition-all duration-300 ease-in-out
+          ${collapsed ? 'w-0 opacity-0 ml-0' : 'w-auto opacity-100 ml-3'}
+        `}
+      >
         <span 
-          className="text-sm font-medium transition-colors"
+          className="text-sm font-medium whitespace-nowrap transition-colors"
           style={{ color: textColor }}
         >
           {label}
         </span>
-      )}
+      </div>
+      
+      {/* Badge */}
       {!collapsed && badge && (
         <span className="ml-auto text-xs bg-[var(--calm-primary)] text-black px-2 py-0.5 rounded-full">
           {badge}
