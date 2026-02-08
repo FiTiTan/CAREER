@@ -41,9 +41,16 @@ export function ScoreDashboard({ score }: ScoreDashboardProps) {
       <div className="flex flex-col lg:flex-row items-center gap-6 lg:gap-12 overflow-visible">
         <div className="flex-shrink-0">
           <ScoreRing
-            score={score.total}
-            size="xl"
-            trend={getPrimaryTrend(score)}
+            total={score.total}
+            pillars={{
+              documents: score.pillars.documents.value,
+              visibility: score.pillars.visibility.value,
+              network: score.pillars.network.value,
+              dynamique: score.pillars.dynamique.value,
+              organisation: score.pillars.organisation.value,
+              presence: score.pillars.presence.value,
+            }}
+            size={180}
           />
         </div>
         <div className="flex-1 text-center lg:text-left">
