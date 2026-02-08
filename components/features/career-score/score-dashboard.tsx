@@ -74,12 +74,17 @@ export function ScoreDashboard({ score }: ScoreDashboardProps) {
           const pillarScore = score.pillars[key];
           const Icon = PILLAR_ICONS[key];
           const stat = getPillarStat(key);
+          const status = getScoreStatus(pillarScore.value);
           
           return (
             <Link
               key={key}
               href={config.route}
-              className="bg-[var(--calm-bg-card)] border border-[var(--calm-border)] rounded-[14px] p-5 transition-all hover:border-[var(--calm-border-hover)] hover:-translate-y-0.5 hover:shadow-sm group"
+              className="rounded-[14px] p-5 transition-all hover:-translate-y-0.5 hover:shadow-sm group"
+              style={{
+                background: status.cardBg,
+                border: status.cardBorder,
+              }}
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3">
@@ -91,7 +96,17 @@ export function ScoreDashboard({ score }: ScoreDashboardProps) {
                     <Icon size={20} style={{ color: config.color }} />
                   </div>
                   <div>
-                    <h3 className="font-semibold">{config.label}</h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold">{config.label}</h3>
+                      {status.badge && (
+                        <span 
+                          className="text-[10px] font-medium px-1.5 py-0.5 rounded-full"
+                          style={{ background: status.badgeBg, color: status.badgeColor }}
+                        >
+                          {status.badge}
+                        </span>
+                      )}
+                    </div>
                     <p className="text-sm text-[var(--calm-text-muted)]">{config.module}</p>
                   </div>
                 </div>
@@ -230,4 +245,28 @@ function getScoreHistory(): number[] {
   // Données simulées pour 30 jours - à connecter à l'API plus tard
   // Progression de 59 à 67 avec variations
   return [59, 59, 60, 61, 60, 62, 63, 62, 64, 63, 65, 64, 66, 65, 64, 66, 65, 67, 66, 68, 67, 66, 68, 67, 69, 68, 67, 68, 67, 67];
+}
+
+function getScoreStatus(score: number) {
+  if (score < 40) return {
+    badge: 'Axe faible',
+    badgeBg: 'rgba(255, 140, 66, 0.15)',
+    badgeColor: '#ff8c42',
+    cardBorder: '1px solid rgba(255, 140, 66, 0.25)',
+    cardBg: 'rgba(255, 140, 66, 0.03)',
+  };
+  if (score >= 80) return {
+    badge: 'Excellent',
+    badgeBg: 'rgba(0, 212, 170, 0.15)',
+    badgeColor: '#00d4aa',
+    cardBorder: '1px solid rgba(0, 212, 170, 0.2)',
+    cardBg: 'rgba(0, 212, 170, 0.03)',
+  };
+  return {
+    badge: null,
+    badgeBg: undefined,
+    badgeColor: undefined,
+    cardBorder: '1px solid var(--calm-border)',
+    cardBg: 'var(--calm-bg-card)',
+  };
 }
