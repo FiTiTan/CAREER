@@ -7,6 +7,7 @@ import { useSubscription } from '@/lib/hooks/use-subscription';
 import { useSidebar } from '@/lib/contexts/sidebar-context';
 import { ModuleIcon, MODULE_COLORS } from '@/components/ui/module-icon';
 import {
+  Diamond,
   Star,
   FileText,
   Palette,
