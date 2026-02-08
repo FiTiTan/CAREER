@@ -181,8 +181,12 @@ function SidebarItem({
     <Link
       href={href}
       className={`
-        flex items-center h-10 px-3 rounded-full
+        flex items-center h-10 rounded-full
         transition-all duration-300 ease-in-out
+        ${collapsed 
+          ? 'w-10 justify-center mx-auto' 
+          : 'px-3 w-full'
+        }
         ${active
           ? 'bg-[rgba(0,212,170,0.1)]'
           : 'hover:bg-[var(--calm-bg-hover)]'
@@ -191,25 +195,25 @@ function SidebarItem({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* Icône - toujours à la même position */}
+      {/* Icône */}
       <div className="w-5 flex-shrink-0 flex items-center justify-center">
         <Icon size={18} style={{ color }} />
       </div>
       
-      {/* Texte - avec transition d'opacité et largeur */}
-      <div 
+      {/* Texte - avec transition */}
+      <span 
         className={`
-          overflow-hidden transition-all duration-300 ease-in-out
-          ${collapsed ? 'w-0 opacity-0 ml-0' : 'w-auto opacity-100 ml-3'}
+          text-sm font-medium whitespace-nowrap
+          transition-all duration-300 ease-in-out
+          ${collapsed 
+            ? 'w-0 opacity-0 overflow-hidden' 
+            : 'ml-3 opacity-100'
+          }
         `}
+        style={{ color: textColor }}
       >
-        <span 
-          className="text-sm font-medium whitespace-nowrap transition-colors"
-          style={{ color: textColor }}
-        >
-          {label}
-        </span>
-      </div>
+        {label}
+      </span>
       
       {/* Badge */}
       {!collapsed && badge && (
