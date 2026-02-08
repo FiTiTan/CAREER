@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useState } from 'react';
 import { useSubscription } from '@/lib/hooks/use-subscription';
 import { useSidebar } from '@/lib/contexts/sidebar-context';
 import { ModuleIcon, MODULE_COLORS } from '@/components/ui/module-icon';
@@ -152,7 +153,7 @@ function SidebarGroupLabel({
   );
 }
 
-// Composant Item de sidebar avec icônes SVG dans cercles
+// Composant Item de sidebar avec icônes SVG
 function SidebarItem({
   href,
   Icon,
@@ -170,7 +171,11 @@ function SidebarItem({
   collapsed: boolean;
   badge?: number;
 }) {
+  const [hovered, setHovered] = useState(false);
   const color = MODULE_COLORS[module] || '#00d4aa';
+
+  // Couleur du texte : couleur du module si actif ou hover, sinon gris
+  const textColor = (active || hovered) ? color : 'var(--calm-text-secondary)';
 
   return (
     <Link
@@ -182,15 +187,22 @@ function SidebarItem({
           : 'gap-3 px-3 py-2.5 rounded-full'
         }
         ${active
-          ? 'bg-[rgba(0,212,170,0.1)] text-[var(--calm-primary)]'
-          : 'text-[var(--calm-text-secondary)] hover:bg-[var(--calm-bg-hover)] hover:text-white'
+          ? 'bg-[rgba(0,212,170,0.1)]'
+          : 'hover:bg-[var(--calm-bg-hover)]'
         }
       `}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
       {/* Icône SVG seule */}
       <Icon size={18} style={{ color }} className="flex-shrink-0" />
       {!collapsed && (
-        <span className="text-sm font-medium">{label}</span>
+        <span 
+          className="text-sm font-medium transition-colors"
+          style={{ color: textColor }}
+        >
+          {label}
+        </span>
       )}
       {!collapsed && badge && (
         <span className="ml-auto text-xs bg-[var(--calm-primary)] text-black px-2 py-0.5 rounded-full">
