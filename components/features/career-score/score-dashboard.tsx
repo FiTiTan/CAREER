@@ -3,7 +3,30 @@
 import Link from 'next/link';
 import { ScoreRing } from '@/components/ui/score-ring';
 import { PillarGauge } from '@/components/ui/pillar-gauge';
+import { TrendIcon, MODULE_COLORS } from '@/components/ui/module-icon';
 import { PILLAR_CONFIG, PillarKey, CareerScore, RecommendedAction } from '@/types/score';
+import {
+  FileText,
+  Palette,
+  Target,
+  Linkedin,
+  Lock,
+  Globe,
+  Zap,
+  BarChart3,
+  TrendingUp,
+  LucideIcon,
+} from 'lucide-react';
+
+// Mapping pilier -> icône Lucide
+const PILLAR_ICONS: Record<PillarKey, LucideIcon> = {
+  documents: FileText,
+  visibility: Palette,
+  network: Linkedin,
+  dynamique: Target,
+  organisation: Lock,
+  presence: Globe,
+};
 
 interface ScoreDashboardProps {
   score: CareerScore;
@@ -15,7 +38,7 @@ export function ScoreDashboard({ score }: ScoreDashboardProps) {
   return (
     <div className="space-y-6">
       {/* Hero Section - Score Ring */}
-      <div className="card flex flex-col lg:flex-row items-center gap-6 lg:gap-12">
+      <div className="bg-[var(--calm-bg-card)] border border-[var(--calm-border)] rounded-[14px] p-6 flex flex-col lg:flex-row items-center gap-6 lg:gap-12 transition-all hover:border-[var(--calm-border-hover)]">
         <div className="flex-shrink-0">
           <ScoreRing
             score={score.total}
@@ -27,7 +50,7 @@ export function ScoreDashboard({ score }: ScoreDashboardProps) {
           <h1 className="text-2xl lg:text-3xl font-bold mb-2">
             Votre CareerScore
           </h1>
-          <p className="text-secondary mb-4">
+          <p className="text-[var(--calm-text-secondary)] mb-4">
             {getScoreMessage(score.total)}
           </p>
           {score.recommended_action && (
@@ -40,23 +63,26 @@ export function ScoreDashboard({ score }: ScoreDashboardProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {pillars.map(([key, config]) => {
           const pillarScore = score.pillars[key];
+          const Icon = PILLAR_ICONS[key];
+          
           return (
             <Link
               key={key}
               href={config.route}
-              className="card card-interactive group"
+              className="bg-[var(--calm-bg-card)] border border-[var(--calm-border)] rounded-[14px] p-5 transition-all hover:border-[var(--calm-border-hover)] hover:-translate-y-0.5 hover:shadow-lg dark:hover:shadow-[0_4px_20px_rgba(0,0,0,0.3)] group"
             >
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <span
-                    className="w-10 h-10 rounded-xl flex items-center justify-center text-lg"
-                    style={{ backgroundColor: `${config.color}20` }}
+                  {/* Icône SVG dans cercle arrondi */}
+                  <div
+                    className="w-10 h-10 rounded-full flex items-center justify-center"
+                    style={{ backgroundColor: `${config.color}15` }}
                   >
-                    {config.icon}
-                  </span>
+                    <Icon size={20} style={{ color: config.color }} />
+                  </div>
                   <div>
                     <h3 className="font-semibold">{config.label}</h3>
-                    <p className="text-sm text-muted">{config.module}</p>
+                    <p className="text-sm text-[var(--calm-text-muted)]">{config.module}</p>
                   </div>
                 </div>
                 <span
@@ -72,12 +98,10 @@ export function ScoreDashboard({ score }: ScoreDashboardProps) {
                 showLabel={false}
               />
               <div className="mt-3 flex items-center justify-between text-sm">
-                <span className="text-muted">
+                <span className="text-[var(--calm-text-muted)]">
                   Poids: {Math.round(pillarScore.weight * 100)}%
                 </span>
-                <span className={getTrendClass(pillarScore.trend)}>
-                  {getTrendIcon(pillarScore.trend)}
-                </span>
+                <TrendIcon trend={pillarScore.trend} />
               </div>
             </Link>
           );
@@ -87,22 +111,26 @@ export function ScoreDashboard({ score }: ScoreDashboardProps) {
       {/* Quick Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          icon="📄"
+          Icon={FileText}
+          color={MODULE_COLORS['cv-coach']}
           label="CV analysés"
           value="3"
         />
         <StatCard
-          icon="🎯"
+          Icon={Target}
+          color={MODULE_COLORS['job-match']}
           label="Offres matchées"
           value="12"
         />
         <StatCard
-          icon="📊"
+          Icon={BarChart3}
+          color={MODULE_COLORS['portfolio']}
           label="Candidatures"
           value="5"
         />
         <StatCard
-          icon="📈"
+          Icon={TrendingUp}
+          color="#00d4aa"
           label="Progression"
           value="+8%"
           positive
@@ -115,30 +143,31 @@ export function ScoreDashboard({ score }: ScoreDashboardProps) {
 // Action Card Component
 function ActionCard({ action }: { action: RecommendedAction }) {
   const config = PILLAR_CONFIG[action.pillar];
+  const Icon = PILLAR_ICONS[action.pillar];
 
   return (
     <Link
       href={action.module_route}
-      className="block p-4 rounded-xl bg-primary-light border border-primary/20 hover:border-primary/40 transition-colors"
+      className="block p-4 rounded-xl bg-[rgba(0,212,170,0.04)] border-l-[3px] border-l-[var(--calm-primary)] border border-[var(--calm-border)] hover:border-[var(--calm-border-hover)] transition-colors"
     >
       <div className="flex items-start gap-3">
-        <span
-          className="w-10 h-10 rounded-lg flex items-center justify-center text-lg flex-shrink-0"
-          style={{ backgroundColor: `${config.color}30` }}
+        <div
+          className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+          style={{ backgroundColor: `${config.color}15` }}
         >
-          {config.icon}
-        </span>
+          <Icon size={20} style={{ color: config.color }} />
+        </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <span className={`badge ${getPriorityBadge(action.priority)}`}>
+            <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${getPriorityBadgeClass(action.priority)}`}>
               {action.priority === 'high' ? 'Prioritaire' : action.priority === 'medium' ? 'Recommandé' : 'Optionnel'}
             </span>
-            <span className="text-sm text-primary">+{action.potential_gain} pts</span>
+            <span className="text-sm text-[var(--calm-primary)]">+{action.potential_gain} pts</span>
           </div>
           <h4 className="font-medium mb-0.5">{action.title}</h4>
-          <p className="text-sm text-secondary line-clamp-2">{action.description}</p>
+          <p className="text-sm text-[var(--calm-text-secondary)] line-clamp-2">{action.description}</p>
         </div>
-        <span className="text-muted">→</span>
+        <span className="text-[var(--calm-text-muted)]">→</span>
       </div>
     </Link>
   );
@@ -146,23 +175,30 @@ function ActionCard({ action }: { action: RecommendedAction }) {
 
 // Stat Card Component
 function StatCard({
-  icon,
+  Icon,
+  color,
   label,
   value,
   positive,
 }: {
-  icon: string;
+  Icon: LucideIcon;
+  color: string;
   label: string;
   value: string;
   positive?: boolean;
 }) {
   return (
-    <div className="card">
+    <div className="bg-[var(--calm-bg-card)] border border-[var(--calm-border)] rounded-[14px] p-4 transition-all hover:border-[var(--calm-border-hover)]">
       <div className="flex items-center gap-3">
-        <span className="text-2xl">{icon}</span>
+        <div
+          className="w-10 h-10 rounded-full flex items-center justify-center"
+          style={{ backgroundColor: `${color}15` }}
+        >
+          <Icon size={20} style={{ color }} />
+        </div>
         <div>
-          <p className="text-sm text-muted">{label}</p>
-          <p className={`text-xl font-bold ${positive ? 'text-success' : ''}`}>
+          <p className="text-sm text-[var(--calm-text-muted)]">{label}</p>
+          <p className={`text-xl font-bold ${positive ? 'text-[var(--calm-success)]' : ''}`}>
             {value}
           </p>
         </div>
@@ -188,22 +224,10 @@ function getPrimaryTrend(score: CareerScore): 'up' | 'down' | 'stable' {
   return 'stable';
 }
 
-function getTrendIcon(trend: 'up' | 'down' | 'stable'): string {
-  return trend === 'up' ? '↑' : trend === 'down' ? '↓' : '→';
-}
-
-function getTrendClass(trend: 'up' | 'down' | 'stable'): string {
-  return trend === 'up'
-    ? 'text-success'
-    : trend === 'down'
-    ? 'text-error'
-    : 'text-muted';
-}
-
-function getPriorityBadge(priority: 'high' | 'medium' | 'low'): string {
+function getPriorityBadgeClass(priority: 'high' | 'medium' | 'low'): string {
   return priority === 'high'
-    ? 'badge-error'
+    ? 'bg-[rgba(239,68,68,0.15)] text-[var(--calm-error)]'
     : priority === 'medium'
-    ? 'badge-warning'
-    : 'badge-primary';
+    ? 'bg-[rgba(245,158,11,0.15)] text-[var(--calm-warning)]'
+    : 'bg-[var(--calm-primary-light)] text-[var(--calm-primary)]';
 }

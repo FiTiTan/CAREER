@@ -1,5 +1,6 @@
 /* CALM-UI Design Tokens — CareerCare */
 
+/* Dark mode (default) */
 :root {
   /* Primary Colors */
   --calm-primary: #00d4aa;
@@ -16,22 +17,22 @@
   --calm-accent: #8b5cf6;
   --calm-accent-hover: #7c3aed;
 
-  /* Background Colors */
+  /* Background Colors - Dark */
   --calm-bg: #06070b;
-  --calm-bg-elevated: #0d0f14;
-  --calm-bg-card: #12141a;
-  --calm-bg-hover: #1a1d24;
+  --calm-bg-elevated: #0d0f16;
+  --calm-bg-card: #11131c;
+  --calm-bg-hover: rgba(255, 255, 255, 0.04);
   --calm-bg-active: #22262f;
 
-  /* Text Colors */
-  --calm-text: #ffffff;
+  /* Text Colors - Dark */
+  --calm-text: #e8eaf4;
   --calm-text-secondary: #a1a1aa;
-  --calm-text-muted: #71717a;
-  --calm-text-disabled: #52525b;
+  --calm-text-muted: #7580a8;
+  --calm-text-disabled: #3a4168;
 
-  /* Border Colors */
-  --calm-border: #27272a;
-  --calm-border-hover: #3f3f46;
+  /* Border Colors - Dark */
+  --calm-border: #1a1e30;
+  --calm-border-hover: #252b45;
   --calm-border-focus: var(--calm-primary);
 
   /* Status Colors */
@@ -48,7 +49,12 @@
   --calm-pillar-organisation: #ff8c42;
   --calm-pillar-presence: #f472b6;
 
-  /* Shadows */
+  /* Module Colors */
+  --calm-boutique: #fbbf24;
+  --calm-score: #00d4aa;
+  --calm-settings: #7580a8;
+
+  /* Shadows - Dark */
   --calm-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
   --calm-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
   --calm-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.3);
@@ -108,16 +114,46 @@
   --calm-bottom-nav-height: 64px;
 }
 
-/* Light mode (optionnel) */
+/* Light mode */
+.light {
+  /* Background Colors - Light */
+  --calm-bg: #ffffff;
+  --calm-bg-elevated: #f8f9fb;
+  --calm-bg-card: #ffffff;
+  --calm-bg-hover: rgba(0, 0, 0, 0.04);
+  --calm-bg-active: #e5e7eb;
+
+  /* Text Colors - Light */
+  --calm-text: #111827;
+  --calm-text-secondary: #6b7280;
+  --calm-text-muted: #9ca3af;
+  --calm-text-disabled: #d1d5db;
+
+  /* Border Colors - Light */
+  --calm-border: #e5e7eb;
+  --calm-border-hover: #d1d5db;
+
+  /* Shadows - Light */
+  --calm-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --calm-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+  --calm-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  --calm-shadow-glow: 0 0 20px rgba(0, 212, 170, 0.2);
+}
+
+/* Support for data-theme attribute as well */
 [data-theme="light"] {
   --calm-bg: #ffffff;
-  --calm-bg-elevated: #f4f4f5;
-  --calm-bg-card: #fafafa;
-  --calm-bg-hover: #f1f1f1;
-  --calm-bg-active: #e4e4e7;
-  --calm-text: #18181b;
-  --calm-text-secondary: #52525b;
-  --calm-text-muted: #71717a;
-  --calm-border: #e4e4e7;
-  --calm-border-hover: #d4d4d8;
+  --calm-bg-elevated: #f8f9fb;
+  --calm-bg-card: #ffffff;
+  --calm-bg-hover: rgba(0, 0, 0, 0.04);
+  --calm-bg-active: #e5e7eb;
+  --calm-text: #111827;
+  --calm-text-secondary: #6b7280;
+  --calm-text-muted: #9ca3af;
+  --calm-text-disabled: #d1d5db;
+  --calm-border: #e5e7eb;
+  --calm-border-hover: #d1d5db;
+  --calm-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --calm-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+  --calm-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
 }

@@ -4,20 +4,35 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { useSubscription } from '@/lib/hooks/use-subscription';
+import { ModuleIcon, MODULE_COLORS } from '@/components/ui/module-icon';
+import {
+  Diamond,
+  FileText,
+  Palette,
+  Target,
+  Linkedin,
+  Lock,
+  Globe,
+  ShoppingBag,
+  Settings,
+  ChevronLeft,
+  ChevronRight,
+  LucideIcon,
+} from 'lucide-react';
 
-// Navigation items
+// Navigation items avec icônes Lucide
 const toolsNav = [
-  { href: '/hub/cv-coach', label: 'CV Coach', icon: '📄' },
-  { href: '/hub/portfolio', label: 'Portfolio', icon: '🎨' },
-  { href: '/hub/job-match', label: 'Job Match', icon: '🎯' },
-  { href: '/hub/linkedin', label: 'LinkedIn', icon: '💼' },
-  { href: '/hub/vault', label: 'Coffre-Fort', icon: '🔒' },
-  { href: '/hub/e-reputation', label: 'E-Réputation', icon: '🌐' },
+  { href: '/hub/cv-coach', label: 'CV Coach', icon: FileText, module: 'cv-coach' },
+  { href: '/hub/portfolio', label: 'Portfolio', icon: Palette, module: 'portfolio' },
+  { href: '/hub/job-match', label: 'Job Match', icon: Target, module: 'job-match' },
+  { href: '/hub/linkedin', label: 'LinkedIn', icon: Linkedin, module: 'linkedin' },
+  { href: '/hub/vault', label: 'Coffre-Fort', icon: Lock, module: 'vault' },
+  { href: '/hub/e-reputation', label: 'E-Réputation', icon: Globe, module: 'e-reputation' },
 ];
 
 const plusNav = [
-  { href: '/hub/boutique', label: 'Boutique', icon: '🛒' },
-  { href: '/hub/settings', label: 'Paramètres', icon: '⚙️' },
+  { href: '/hub/boutique', label: 'Boutique', icon: ShoppingBag, module: 'boutique' },
+  { href: '/hub/settings', label: 'Paramètres', icon: Settings, module: 'settings' },
 ];
 
 export function HubSidebar() {
@@ -41,8 +56,8 @@ export function HubSidebar() {
       {/* Logo */}
       <div className="h-16 flex items-center px-4 border-b border-[var(--calm-border)]">
         <Link href="/hub" className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-[var(--calm-primary)] flex items-center justify-center text-lg">
-            ◆
+          <div className="w-8 h-8 rounded-full bg-[#00d4aa15] flex items-center justify-center">
+            <Diamond size={18} className="text-[#00d4aa]" />
           </div>
           {!collapsed && (
             <span className="font-semibold text-lg">CareerCare</span>
@@ -53,7 +68,7 @@ export function HubSidebar() {
           className="ml-auto p-2 hover:bg-[var(--calm-bg-hover)] rounded-lg text-[var(--calm-text-muted)]"
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
-          {collapsed ? '→' : '←'}
+          {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
         </button>
       </div>
 
@@ -62,7 +77,8 @@ export function HubSidebar() {
         {/* CareerScore - Item isolé */}
         <SidebarItem
           href="/hub"
-          icon="◆"
+          Icon={Diamond}
+          module="score"
           label="CareerScore"
           active={isActive('/hub')}
           collapsed={collapsed}
@@ -78,7 +94,8 @@ export function HubSidebar() {
             <li key={item.href}>
               <SidebarItem
                 href={item.href}
-                icon={item.icon}
+                Icon={item.icon}
+                module={item.module}
                 label={item.label}
                 active={isActive(item.href)}
                 collapsed={collapsed}
@@ -94,7 +111,8 @@ export function HubSidebar() {
             <li key={item.href}>
               <SidebarItem
                 href={item.href}
-                icon={item.icon}
+                Icon={item.icon}
+                module={item.module}
                 label={item.label}
                 active={isActive(item.href)}
                 collapsed={collapsed}
@@ -134,22 +152,26 @@ function SidebarGroupLabel({
   );
 }
 
-// Composant Item de sidebar
+// Composant Item de sidebar avec icônes SVG dans cercles
 function SidebarItem({
   href,
-  icon,
+  Icon,
+  module,
   label,
   active,
   collapsed,
   badge,
 }: {
   href: string;
-  icon: string;
+  Icon: LucideIcon;
+  module: string;
   label: string;
   active: boolean;
   collapsed: boolean;
   badge?: number;
 }) {
+  const color = MODULE_COLORS[module] || '#00d4aa';
+
   return (
     <Link
       href={href}
@@ -162,7 +184,13 @@ function SidebarItem({
         }
       `}
     >
-      <span className="text-lg w-6 text-center">{icon}</span>
+      {/* Icône dans cercle arrondi */}
+      <div
+        className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+        style={{ backgroundColor: `${color}15` }}
+      >
+        <Icon size={16} style={{ color }} />
+      </div>
       {!collapsed && (
         <span className="text-sm font-medium">{label}</span>
       )}
