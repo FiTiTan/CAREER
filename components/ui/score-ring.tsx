@@ -12,10 +12,10 @@ interface ScoreRingProps {
 }
 
 const sizeConfig = {
-  sm: { diameter: 80, strokeWidth: 6, fontSize: 'text-lg' },
-  md: { diameter: 120, strokeWidth: 8, fontSize: 'text-2xl' },
-  lg: { diameter: 180, strokeWidth: 10, fontSize: 'text-4xl' },
-  xl: { diameter: 240, strokeWidth: 12, fontSize: 'text-5xl' },
+  sm: { diameter: 80, ringSize: 70, strokeWidth: 6, fontSize: 'text-lg' },
+  md: { diameter: 120, ringSize: 100, strokeWidth: 8, fontSize: 'text-2xl' },
+  lg: { diameter: 180, ringSize: 150, strokeWidth: 10, fontSize: 'text-4xl' },
+  xl: { diameter: 240, ringSize: 200, strokeWidth: 12, fontSize: 'text-5xl' },
 };
 
 export function ScoreRing({
@@ -29,7 +29,7 @@ export function ScoreRing({
   const [displayScore, setDisplayScore] = useState(animated ? 0 : score);
   const config = sizeConfig[size];
 
-  const radius = (config.diameter - config.strokeWidth) / 2;
+  const radius = (config.ringSize - config.strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (displayScore / 100) * circumference;
 
@@ -76,17 +76,18 @@ export function ScoreRing({
   return (
     <div
       className={`relative inline-flex items-center justify-center overflow-visible ${className}`}
-      style={{ width: config.diameter + 20, height: config.diameter + 20, padding: 10 }}
+      style={{ width: config.diameter, height: config.diameter }}
     >
       <svg
-        width={config.diameter}
-        height={config.diameter}
+        width={config.ringSize}
+        height={config.ringSize}
         className="transform -rotate-90"
+        style={{ overflow: 'visible' }}
       >
         {/* Background circle */}
         <circle
-          cx={config.diameter / 2}
-          cy={config.diameter / 2}
+          cx={config.ringSize / 2}
+          cy={config.ringSize / 2}
           r={radius}
           fill="none"
           stroke="var(--calm-bg-hover)"
@@ -95,8 +96,8 @@ export function ScoreRing({
 
         {/* Progress circle */}
         <circle
-          cx={config.diameter / 2}
-          cy={config.diameter / 2}
+          cx={config.ringSize / 2}
+          cy={config.ringSize / 2}
           r={radius}
           fill="none"
           stroke={getScoreColor(displayScore)}
@@ -106,7 +107,7 @@ export function ScoreRing({
           strokeDashoffset={offset}
           className={animated ? 'transition-all duration-1000 ease-out' : ''}
           style={{
-            filter: `drop-shadow(0 0 8px ${getScoreColor(displayScore)})`,
+            filter: `drop-shadow(0 0 12px ${getScoreColor(displayScore)})`,
           }}
         />
       </svg>
