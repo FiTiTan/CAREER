@@ -107,7 +107,7 @@ export function ScoreRing({
           strokeDashoffset={offset}
           className={animated ? 'transition-all duration-1000 ease-out' : ''}
           style={{
-            filter: `drop-shadow(0 0 12px ${getScoreColor(displayScore)})`,
+            filter: `drop-shadow(0 0 6px ${getScoreColor(displayScore)})`,
           }}
         />
       </svg>
