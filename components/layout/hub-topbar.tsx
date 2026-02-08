@@ -42,7 +42,7 @@ export function HubTopbar({ userName, userAvatar, planBadge = 'free' }: HubTopba
       </div>
 
       {/* Desktop: Search */}
-      <div className="hidden lg:flex flex-1 max-w-md">
+      <div className="hidden lg:flex flex-1 max-w-xs">
         <div className="relative w-full">
           <input
             type="text"
