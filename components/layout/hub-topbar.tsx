@@ -30,7 +30,7 @@ export function HubTopbar({ userName, userAvatar, planBadge = 'free' }: HubTopba
   };
 
   return (
-    <header className="h-16 bg-[var(--calm-bg-elevated)] border-b border-[var(--calm-border)] flex items-center px-4 lg:px-6">
+    <header className="h-16 bg-[var(--calm-bg-elevated)] flex items-center px-4 lg:px-6">
       {/* Mobile: Logo */}
       <div className="lg:hidden">
         <Link href="/hub" className="flex items-center gap-2">
