@@ -187,13 +187,8 @@ function SidebarItem({
         }
       `}
     >
-      {/* Icône dans cercle arrondi - only show bg when not active and expanded */}
-      <div
-        className={`flex items-center justify-center flex-shrink-0 ${collapsed ? '' : 'w-8 h-8 rounded-full'}`}
-        style={{ backgroundColor: collapsed ? 'transparent' : `${color}15` }}
-      >
-        <Icon size={collapsed ? 18 : 16} style={{ color }} />
-      </div>
+      {/* Icône SVG seule */}
+      <Icon size={18} style={{ color }} className="flex-shrink-0" />
       {!collapsed && (
         <span className="text-sm font-medium">{label}</span>
       )}
