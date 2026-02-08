@@ -1,12 +1,13 @@
+'use client';
+
 import { HubSidebar } from '@/components/layout/hub-sidebar';
 import { HubBottomNav } from '@/components/layout/hub-bottom-nav';
 import { HubTopbar } from '@/components/layout/hub-topbar';
+import { SidebarProvider, useSidebar } from '@/lib/contexts/sidebar-context';
 
-export default function HubLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+function HubLayoutContent({ children }: { children: React.ReactNode }) {
+  const { collapsed } = useSidebar();
+
   // TODO: Fetch user data from Supabase session
   const userData = {
     userName: undefined,
@@ -20,7 +21,9 @@ export default function HubLayout({
       <HubSidebar />
 
       {/* Main Content Area */}
-      <div className="lg:pl-60">
+      <div 
+        className={`transition-all duration-300 ${collapsed ? 'lg:pl-16' : 'lg:pl-60'}`}
+      >
         {/* Topbar */}
         <HubTopbar {...userData} />
 
@@ -33,5 +36,17 @@ export default function HubLayout({
       {/* Bottom Nav - Mobile only */}
       <HubBottomNav />
     </div>
+  );
+}
+
+export default function HubLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <SidebarProvider>
+      <HubLayoutContent>{children}</HubLayoutContent>
+    </SidebarProvider>
   );
 }

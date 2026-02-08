@@ -2,8 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
 import { useSubscription } from '@/lib/hooks/use-subscription';
+import { useSidebar } from '@/lib/contexts/sidebar-context';
 import { ModuleIcon, MODULE_COLORS } from '@/components/ui/module-icon';
 import {
   Diamond,
@@ -37,7 +37,7 @@ const plusNav = [
 
 export function HubSidebar() {
   const pathname = usePathname();
-  const [collapsed, setCollapsed] = useState(false);
+  const { collapsed, toggle } = useSidebar();
 
   const isActive = (href: string) => {
     if (href === '/hub') return pathname === '/hub';
@@ -64,7 +64,7 @@ export function HubSidebar() {
           )}
         </Link>
         <button
-          onClick={() => setCollapsed(!collapsed)}
+          onClick={toggle}
           className="ml-auto p-2 hover:bg-[var(--calm-bg-hover)] rounded-lg text-[var(--calm-text-muted)]"
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
