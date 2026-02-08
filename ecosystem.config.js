@@ -4,7 +4,7 @@ module.exports = {
       name: 'careercare',
       script: 'node_modules/.bin/next',
       args: 'start',
-      cwd: '/home/ubuntu/clawd',
+      cwd: '/home/ubuntu/CAREER',
       instances: 2,
       exec_mode: 'cluster',
       env: {

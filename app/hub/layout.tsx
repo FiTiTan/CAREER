@@ -1,19 +1,11 @@
 import { HubSidebar } from '@/components/layout/hub-sidebar';
 import { HubBottomNav } from '@/components/layout/hub-bottom-nav';
-import { HubTopbar } from '@/components/layout/hub-topbar';
 
 export default function HubLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // TODO: Fetch user data from Supabase session
-  const userData = {
-    userName: undefined,
-    userAvatar: undefined,
-    planBadge: 'free' as const,
-  };
-
   return (
     <div className="min-h-screen bg-[var(--calm-bg)]">
       {/* Sidebar - Desktop only */}
@@ -21,9 +13,6 @@ export default function HubLayout({
 
       {/* Main Content Area */}
       <div className="lg:pl-60">
-        {/* Topbar */}
-        <HubTopbar {...userData} />
-
         {/* Page Content */}
         <main className="p-4 lg:p-6 pb-20 lg:pb-6">
           {children}
