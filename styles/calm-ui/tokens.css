@@ -117,8 +117,8 @@
 /* Light mode */
 .light {
   /* Background Colors - Light */
-  --calm-bg: #ffffff;
-  --calm-bg-elevated: #f8f9fb;
+  --calm-bg: #f4f5f7;
+  --calm-bg-elevated: #ffffff;
   --calm-bg-card: #ffffff;
   --calm-bg-hover: rgba(0, 0, 0, 0.04);
   --calm-bg-active: #e5e7eb;
@@ -142,8 +142,8 @@
 
 /* Support for data-theme attribute as well */
 [data-theme="light"] {
-  --calm-bg: #ffffff;
-  --calm-bg-elevated: #f8f9fb;
+  --calm-bg: #f4f5f7;
+  --calm-bg-elevated: #ffffff;
   --calm-bg-card: #ffffff;
   --calm-bg-hover: rgba(0, 0, 0, 0.04);
   --calm-bg-active: #e5e7eb;
